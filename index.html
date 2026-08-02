@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUMEN Academy — Réalité augmentée pour l'albinisme &amp; la basse vision</title>
+<style>
+:root {
+  --bg: #0b0d16;
+  --surface: #141827;
+  --surface2: #1b2033;
+  --surface3: #242b42;
+  --border: #2e3752;
+  --text: #eceef6;
+  --muted: #8b94ad;
+  --gold: #f6c453;
+  --cyan: #56c8e8;
+  --green: #6fdc8c;
+  --purple: #b7a4ec;
+  --coral: #ff8f70;
+  --red: #ef5d5d;
+  --radius: 12px;
+  --fs: 15px;
+}
+/* Mode basse vision — le projet appliqué à lui-même */
+body.lowvision {
+  --bg: #000000; --surface: #10131c; --surface2: #181c29; --surface3: #222738;
+  --border: #4a5578; --text: #ffffff; --muted: #c3cadb; --fs: 18px;
+}
+body.lowvision a { text-decoration: underline; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; font-size: var(--fs); }
+button { font-family: inherit; }
+a { color: var(--cyan); }
+
+/* ===== HEADER ===== */
+header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 20px; position: sticky; top: 0; z-index: 100; }
+.hd { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.logo { font-size: 17px; font-weight: 700; letter-spacing: .3px; white-space: nowrap; }
+.logo span { color: var(--gold); }
+.hd-stats { display: flex; gap: 14px; margin-left: auto; align-items: center; flex-wrap: wrap; }
+.hd-stat { display: flex; align-items: center; gap: 6px; font-size: .87em; color: var(--muted); }
+.hd-stat b { color: var(--text); }
+.lvl-pill { background: var(--surface3); border: 1px solid var(--border); border-radius: 99px; padding: 4px 14px; font-size: .8em; font-weight: 600; color: var(--gold); }
+.xp-bar { width: 120px; height: 6px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+.xp-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--coral)); transition: width .4s; }
+.lv-toggle { background: var(--surface3); border: 1px solid var(--border); color: var(--text); border-radius: 99px; padding: 5px 14px; font-size: .8em; cursor: pointer; }
+.lv-toggle.on { background: var(--gold); color: #1a1400; border-color: var(--gold); font-weight: 700; }
+
+/* ===== NAV ===== */
+nav { background: var(--surface); border-bottom: 1px solid var(--border); overflow-x: auto; }
+.nav-inner { max-width: 1100px; margin: 0 auto; display: flex; gap: 4px; padding: 0 16px; }
+.nav-btn { background: none; border: none; color: var(--muted); font-size: .87em; padding: 12px 15px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all .15s; }
+.nav-btn:hover { color: var(--text); }
+.nav-btn.active { color: var(--gold); border-bottom-color: var(--gold); font-weight: 600; }
+.nav-btn:focus-visible, button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+/* ===== LAYOUT ===== */
+.container { max-width: 1100px; margin: 0 auto; padding: 24px 16px 90px; }
+.view { display: none; animation: fade .25s ease; }
+.view.active { display: block; }
+@keyframes fade { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: none;} }
+@media (prefers-reduced-motion: reduce) { .view, .xp-fill { animation: none; transition: none; } }
+h2 { font-size: 1.35em; font-weight: 700; margin-bottom: 4px; }
+h3 { font-size: 1.05em; margin-bottom: 8px; }
+.sub { font-size: .88em; color: var(--muted); margin-bottom: 20px; }
+
+/* ===== CARDS ===== */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 22px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+.stat-card .num { font-size: 1.6em; font-weight: 700; color: var(--gold); }
+.stat-card .lbl { font-size: .8em; color: var(--muted); }
+
+/* ===== PHASES / MODULES ===== */
+.phase { margin-bottom: 26px; }
+.phase-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.phase-dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+.phase-title { font-weight: 700; font-size: 1.05em; }
+.phase-desc { font-size: .85em; color: var(--muted); width: 100%; margin-left: 22px; }
+.phase-prog { margin-left: auto; font-size: .8em; color: var(--muted); }
+.mod-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 15px 16px; cursor: pointer; transition: border-color .15s, transform .15s; position: relative; }
+.mod-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+.mod-card.done { border-color: var(--green); }
+.mod-card.done::after { content: "✓"; position: absolute; top: 10px; right: 12px; color: var(--green); font-weight: 700; }
+.mod-card.locked { opacity: .45; cursor: not-allowed; }
+.mod-card.locked::after { content: "🔒"; position: absolute; top: 10px; right: 12px; font-size: .8em; }
+.mod-meta { display: flex; gap: 10px; font-size: .78em; color: var(--muted); margin-top: 6px; flex-wrap: wrap; }
+.mod-meta b { color: var(--gold); }
+.tag { display: inline-block; background: var(--surface3); border-radius: 6px; padding: 2px 8px; font-size: .75em; color: var(--muted); margin: 2px 3px 0 0; }
+
+/* ===== MODAL ===== */
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.72); z-index: 200; overflow-y: auto; padding: 30px 14px; }
+.modal-bg.open { display: block; }
+.modal { max-width: 720px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+.modal h3 { font-size: 1.25em; margin-bottom: 2px; }
+.m-sec { margin-top: 18px; }
+.m-sec h4 { font-size: .82em; text-transform: uppercase; letter-spacing: .8px; color: var(--gold); margin-bottom: 8px; }
+.m-sec ul { padding-left: 20px; }
+.m-sec li { margin-bottom: 6px; font-size: .93em; }
+.res-item { display: flex; gap: 8px; align-items: baseline; padding: 8px 10px; background: var(--surface2); border-radius: 8px; margin-bottom: 6px; font-size: .9em; flex-wrap: wrap; }
+.res-type { font-size: .75em; background: var(--surface3); border-radius: 5px; padding: 1px 7px; color: var(--purple); flex: none; }
+.res-free { font-size: .75em; color: var(--green); flex: none; }
+.deliv { background: var(--surface2); border-left: 3px solid var(--cyan); border-radius: 0 8px 8px 0; padding: 10px 12px; font-size: .9em; }
+.jarvis { background: var(--surface2); border-left: 3px solid var(--gold); border-radius: 0 8px 8px 0; padding: 10px 12px; font-size: .88em; font-style: italic; color: var(--muted); }
+.btn { background: var(--gold); color: #1a1400; border: none; border-radius: 9px; padding: 10px 20px; font-weight: 700; cursor: pointer; font-size: .93em; }
+.btn:hover { filter: brightness(1.08); }
+.btn.ghost { background: var(--surface3); color: var(--text); }
+.btn.small { padding: 6px 13px; font-size: .82em; }
+.modal-actions { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+
+/* ===== PROTOTYPE ===== */
+.proto-block { margin-bottom: 26px; }
+.feat { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: border-color .15s; }
+.feat:hover { border-color: var(--cyan); }
+.feat.done { border-color: var(--green); }
+.feat input { margin-top: 5px; accent-color: var(--green); width: 16px; height: 16px; flex: none; }
+.feat .fname { font-size: .93em; }
+.feat .fmeta { font-size: .77em; color: var(--muted); }
+.feat .fxp { margin-left: auto; font-size: .8em; color: var(--gold); flex: none; }
+
+/* ===== INVESTISSEURS ===== */
+.inv-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.inv-top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.inv-type { font-size: .72em; text-transform: uppercase; letter-spacing: .6px; border-radius: 5px; padding: 2px 8px; background: var(--surface3); color: var(--cyan); }
+.inv-type.grant { color: var(--green); } .inv-type.accel { color: var(--gold); } .inv-type.assoc { color: var(--purple); } .inv-type.bench { color: var(--coral); }
+.inv-desc { font-size: .88em; color: var(--muted); }
+.inv-why { font-size: .86em; }
+.inv-foot { display: flex; gap: 8px; align-items: center; margin-top: auto; flex-wrap: wrap; }
+.inv-foot select { background: var(--surface3); color: var(--text); border: 1px solid var(--border); border-radius: 7px; padding: 5px 8px; font-size: .82em; }
+.inv-note { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 7px 10px; font-size: .85em; font-family: inherit; resize: vertical; min-height: 34px; }
+.verify { font-size: .75em; color: var(--muted); }
+
+/* ===== BUSINESS ===== */
+.biz-step { display: flex; gap: 14px; margin-bottom: 16px; }
+.biz-num { width: 34px; height: 34px; border-radius: 50%; background: var(--surface3); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gold); flex: none; }
+.biz-body { flex: 1; }
+
+/* ===== BADGES ===== */
+.badge { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; opacity: .35; }
+.badge.won { opacity: 1; border-color: var(--gold); }
+.badge .ico { font-size: 1.9em; }
+.badge .bt { font-weight: 700; font-size: .9em; margin-top: 6px; }
+.badge .bd { font-size: .78em; color: var(--muted); }
+
+/* ===== JOURNAL ===== */
+.lab-form { display: flex; gap: 8px; margin-bottom: 16px; }
+.lab-form input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; color: var(--text); padding: 10px 12px; font-size: .92em; font-family: inherit; }
+.lab-entry { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; margin-bottom: 8px; display: flex; gap: 10px; align-items: baseline; }
+.lab-date { font-size: .77em; color: var(--muted); flex: none; }
+.lab-del { margin-left: auto; background: none; border: none; color: var(--red); cursor: pointer; font-size: .85em; }
+
+/* ===== TOAST ===== */
+#toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface3); border: 1px solid var(--gold); color: var(--text); padding: 11px 22px; border-radius: 99px; font-size: .9em; transition: transform .3s; z-index: 300; }
+#toast.show { transform: translateX(-50%) translateY(0); }
+.warn { background: var(--surface2); border-left: 3px solid var(--coral); border-radius: 0 8px 8px 0; padding: 10px 12px; font-size: .86em; color: var(--muted); margin: 14px 0; }
+
+
+/* ===== FEED SCIENCES & CODE ===== */
+.feed-wrap { max-width: 620px; margin: 0 auto; }
+.feed-hero { display:flex; align-items:flex-end; justify-content:space-between; gap:14px; margin-bottom:12px; }
+.feed-hero .sub { margin:0; }
+.feed-score { white-space:nowrap; background:var(--surface); border:1px solid var(--border); border-radius:99px; padding:7px 12px; font-size:.78em; color:var(--muted); }
+.feed-score b { color:var(--gold); }
+.feed-filters { display:flex; gap:7px; overflow-x:auto; padding:4px 1px 12px; scrollbar-width:none; }
+.feed-filters::-webkit-scrollbar, .feed-list::-webkit-scrollbar { display:none; }
+.feed-picker { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:9px; margin:2px 0 12px; }
+.feed-picker label { display:flex; align-items:center; gap:9px; background:var(--surface); border:1px solid var(--border); border-radius:13px; padding:7px 10px; color:var(--muted); font-size:.8em; }
+.feed-picker select { min-width:0; width:100%; background:transparent; color:var(--text); border:0; outline:0; font:700 1em inherit; }
+.feed-picker select option { background:var(--surface2); color:var(--text); }
+.feed-shuffle { border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:13px; padding:8px 13px; cursor:pointer; font-weight:700; white-space:nowrap; }
+.feed-shuffle:active { transform:scale(.97); }
+@media (max-width:520px) { .feed-picker { grid-template-columns:1fr; } .feed-shuffle { width:100%; } }
+
+.feed-chip { border:1px solid var(--border); background:var(--surface); color:var(--muted); border-radius:99px; padding:7px 12px; cursor:pointer; white-space:nowrap; font-size:.8em; }
+.feed-chip.active { background:var(--text); border-color:var(--text); color:var(--bg); font-weight:700; }
+.feed-list { height:calc(100vh - 245px); min-height:520px; overflow-y:auto; scroll-snap-type:y mandatory; overscroll-behavior:contain; border-radius:18px; }
+.feed-post { min-height:100%; scroll-snap-align:start; scroll-snap-stop:always; padding:6px 3px 14px; display:flex; }
+.feed-card { position:relative; width:100%; min-height:calc(100vh - 270px); min-height:510px; border-radius:22px; overflow:hidden; border:1px solid rgba(255,255,255,.13); background:#111522; box-shadow:0 22px 55px rgba(0,0,0,.28); cursor:pointer; isolation:isolate; }
+.feed-card::before { content:""; position:absolute; inset:0; background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.22)); pointer-events:none; z-index:2; }
+.feed-progress { position:absolute; top:0; left:0; right:0; height:3px; background:rgba(255,255,255,.15); z-index:8; }
+.feed-progress > i { display:block; height:100%; width:100%; transform-origin:left; background:rgba(255,255,255,.9); animation:feedTimer 12s linear; }
+@keyframes feedTimer { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+@media (prefers-reduced-motion:reduce) { .feed-progress > i { animation:none; } }
+.feed-front, .feed-back { position:absolute; inset:0; padding:18px; display:flex; flex-direction:column; backface-visibility:hidden; transition:transform .55s cubic-bezier(.2,.8,.2,1), opacity .4s; }
+.feed-front { transform:rotateY(0deg); opacity:1; }
+.feed-back { transform:rotateY(180deg); opacity:0; background:linear-gradient(145deg,#121725,#20283d); overflow-y:auto; }
+.feed-card.flipped .feed-front { transform:rotateY(-180deg); opacity:0; }
+.feed-card.flipped .feed-back { transform:rotateY(0); opacity:1; }
+.feed-top { display:flex; align-items:center; gap:10px; position:relative; z-index:4; }
+.feed-avatar { width:38px; height:38px; border-radius:12px; display:grid; place-items:center; font-size:1.25em; background:rgba(255,255,255,.13); border:1px solid rgba(255,255,255,.18); }
+.feed-topic { font-weight:800; font-size:.92em; }
+.feed-meta { color:rgba(255,255,255,.68); font-size:.73em; }
+.feed-level { margin-left:auto; padding:4px 9px; border-radius:99px; background:rgba(0,0,0,.2); border:1px solid rgba(255,255,255,.18); font-size:.7em; }
+.feed-visual { flex:1; min-height:250px; margin:14px 0 10px; border-radius:18px; display:grid; place-items:center; overflow:hidden; position:relative; z-index:3; background:rgba(4,7,14,.28); border:1px solid rgba(255,255,255,.12); }
+.feed-visual::after { content:""; position:absolute; width:170px; height:170px; border-radius:50%; background:rgba(255,255,255,.08); filter:blur(12px); right:-40px; top:-50px; pointer-events:none; }
+.feed-caption { position:relative; z-index:4; }
+.feed-kicker { text-transform:uppercase; letter-spacing:1.7px; font-size:.68em; font-weight:800; opacity:.72; }
+.feed-title { font-size:clamp(1.35em,5vw,2.05em); line-height:1.08; font-weight:900; margin:4px 0 7px; letter-spacing:-.4px; }
+.feed-prompt { color:rgba(255,255,255,.76); font-size:.86em; }
+.feed-actions { display:flex; align-items:center; gap:8px; margin-top:12px; position:relative; z-index:5; }
+.feed-action { width:42px; height:42px; border-radius:13px; border:1px solid rgba(255,255,255,.16); background:rgba(0,0,0,.20); color:#fff; cursor:pointer; font-size:1.05em; display:grid; place-items:center; }
+.feed-action.on { background:#fff; color:#111522; }
+.feed-action.known.on { background:var(--green); border-color:var(--green); color:#07150b; }
+.feed-action-label { color:rgba(255,255,255,.68); font-size:.72em; margin-left:2px; }
+.feed-swipe { margin-left:auto; font-size:.71em; color:rgba(255,255,255,.58); }
+.feed-back h3 { margin-top:12px; font-size:1.35em; }
+.feed-explain { color:#d8ddec; font-size:.94em; margin:10px 0 14px; }
+.feed-points { display:grid; gap:8px; }
+.feed-point { padding:9px 11px; border-radius:11px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.08); font-size:.84em; }
+.feed-code { width:100%; background:#090c13; border:1px solid rgba(255,255,255,.12); border-radius:13px; padding:14px; overflow:auto; font:600 .82em/1.65 ui-monospace,SFMono-Regular,Consolas,monospace; color:#d9e2f2; text-align:left; white-space:pre; box-shadow:inset 0 0 30px rgba(0,0,0,.28); }
+.feed-code .kw { color:#c7a0ff; } .feed-code .fn { color:#66d9ef; } .feed-code .str { color:#a9e36d; } .feed-code .num { color:#ffb86c; } .feed-code .cm { color:#7d879d; font-style:italic; }
+.feed-mini-code { font:700 clamp(.78em,2.3vw,.95em)/1.7 ui-monospace,SFMono-Regular,Consolas,monospace; padding:18px; width:92%; border-radius:16px; background:rgba(3,5,10,.78); box-shadow:0 16px 32px rgba(0,0,0,.25); text-align:left; white-space:pre-wrap; }
+.feed-svg { width:94%; height:94%; max-height:320px; }
+.feed-empty { height:70vh; display:grid; place-items:center; text-align:center; color:var(--muted); background:var(--surface); border:1px dashed var(--border); border-radius:18px; padding:30px; }
+.feed-burst { position:absolute; inset:0; z-index:20; pointer-events:none; display:grid; place-items:center; font-size:5em; opacity:0; transform:scale(.4); }
+.feed-burst.go { animation:burst .65s ease; }
+@keyframes burst { 0%{opacity:0;transform:scale(.4)} 35%{opacity:1;transform:scale(1.15)} 100%{opacity:0;transform:scale(1.55)} }
+.feed-card[data-theme="code"] { background:linear-gradient(145deg,#172035,#1e3054 48%,#6f4db5); }
+.feed-card[data-theme="web"] { background:linear-gradient(145deg,#161d32,#24456f 48%,#00a6a6); }
+.feed-card[data-theme="systems"] { background:linear-gradient(145deg,#101720,#203948 48%,#2f7d65); }
+.feed-card[data-theme="science"] { background:linear-gradient(145deg,#25192e,#563561 50%,#c66b49); }
+.feed-card[data-theme="electric"] { background:linear-gradient(145deg,#151922,#283755 50%,#e0952d); }
+.feed-counter { position:absolute; bottom:13px; right:15px; z-index:9; font-size:.68em; color:rgba(255,255,255,.48); }
+@media (max-width:650px) {
+  .container:has(#view-feed.active) { padding:10px 8px 74px; }
+  .feed-wrap { max-width:none; }
+  .feed-hero { padding:0 5px; align-items:center; }
+  .feed-hero h2 { font-size:1.05em; }
+  .feed-hero .sub { display:none; }
+  .feed-list { height:calc(100vh - 185px); min-height:460px; }
+  .feed-card { min-height:calc(100vh - 205px); border-radius:18px; }
+  .feed-front, .feed-back { padding:15px; }
+  .feed-title { font-size:1.48em; }
+  .feed-visual { margin-top:11px; min-height:230px; }
+}
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd">
+    <div class="logo">LUMEN<span> Academy</span> · RA basse vision</div>
+    <div class="hd-stats">
+      <span class="lvl-pill" id="hd-level">Niveau 1</span>
+      <div class="hd-stat"><b id="hd-xp">0</b> XP <div class="xp-bar"><div class="xp-fill" id="hd-xpfill"></div></div></div>
+      <div class="hd-stat">🔥 <b id="hd-streak">0</b> j</div>
+      <button class="lv-toggle" id="lv-toggle" onclick="toggleLowVision()" aria-pressed="false">👁 Mode basse vision</button>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <button class="nav-btn active" data-view="dashboard">Tableau de bord</button>
+    <button class="nav-btn" data-view="feed">Feed</button>
+    <button class="nav-btn" data-view="roadmap">Parcours</button>
+    <button class="nav-btn" data-view="proto">Prototype</button>
+    <button class="nav-btn" data-view="library">Bibliothèque</button>
+    <button class="nav-btn" data-view="biz">Business</button>
+    <button class="nav-btn" data-view="invest">Investisseurs</button>
+    <button class="nav-btn" data-view="badges">Succès</button>
+    <button class="nav-btn" data-view="lab">Journal</button>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="view active" id="view-dashboard"></div>
+  <div class="view" id="view-feed"></div>
+  <div class="view" id="view-roadmap"></div>
+  <div class="view" id="view-proto"></div>
+  <div class="view" id="view-library"></div>
+  <div class="view" id="view-biz"></div>
+  <div class="view" id="view-invest"></div>
+  <div class="view" id="view-badges"></div>
+  <div class="view" id="view-lab"></div>
+</div>
+
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this) closeModal()">
+  <div class="modal" id="modal" role="dialog" aria-modal="true"></div>
+</div>
+
+<div id="toast" aria-live="polite"></div>
+
+<script>
+/* =====================================================
+   STOCKAGE — localStorage si dispo (fichier ouvert en
+   local), sinon mémoire de session (aperçu).
+===================================================== */
+const store = {
+  ok: (() => { try { localStorage.setItem("_t","1"); localStorage.removeItem("_t"); return true; } catch(e) { return false; } })(),
+  mem: null,
+  get() { if (this.ok) { try { return JSON.parse(localStorage.getItem("lumen-academy") || "null"); } catch(e) { return null; } } return this.mem; },
+  set(v) { if (this.ok) { try { localStorage.setItem("lumen-academy", JSON.stringify(v)); } catch(e) {} } this.mem = v; }
+};
+
+/* =====================================================
+   DATA — PHASES DU PARCOURS
+===================================================== */
+const PHASES = [
+  { id: 0, name: "Phase 0 — Comprendre le besoin", color: "#6fdc8c", desc: "Avant de coder quoi que ce soit : comprendre l'albinisme, la basse vision, et les vrais besoins. La technologie qui ignore ses utilisateurs finit dans un tiroir." },
+  { id: 1, name: "Phase 1 — Fondations programmation", color: "#56c8e8", desc: "Python, JavaScript, Git. Les outils de base. Vous en avez déjà une partie — consolidez, ne vous surestimez pas." },
+  { id: 2, name: "Phase 2 — Vision par ordinateur", color: "#b7a4ec", desc: "OpenCV, traitement d'image, zoom, stabilisation, contraste. Le cœur technique du projet." },
+  { id: 3, name: "Phase 3 — OCR & synthèse vocale", color: "#f6c453", desc: "Lire un tableau, un panneau, un numéro de bus — et le dire à voix haute. La fonctionnalité qui change une journée." },
+  { id: 4, name: "Phase 4 — IA & reconnaissance", color: "#ff8f70", desc: "Détection d'objets, de portes, d'issues de secours, de visages enregistrés. Là où le prototype devient intelligent." },
+  { id: 5, name: "Phase 5 — Réalité augmentée", color: "#56c8e8", desc: "ARCore, WebXR, affichage superposé. Passer d'une app caméra à une vraie expérience RA." },
+  { id: 6, name: "Phase 6 — Embarqué & matériel", color: "#b7a4ec", desc: "Raspberry Pi, caméras, écrans, batterie. Le chemin vers de vraies lunettes. Long, cher, mais c'est la destination." },
+  { id: 7, name: "Phase 7 — Accessibilité, données & réglementation", color: "#6fdc8c", desc: "RGPD, biométrie, dispositifs d'assistance, tests utilisateurs. La partie ennuyeuse qui rend le projet crédible — et légal." },
+  { id: 8, name: "Phase 8 — Business & startup", color: "#f6c453", desc: "Étude de marché, pitch, financement. Une idée sans exécution commerciale reste un joli document. Voir aussi l'onglet Business." }
+];
+
+/* =====================================================
+   DATA — MODULES
+   res: [nom, type, url]
+===================================================== */
+const MODULES = [
+{ id:"m001", phase:0, title:"L'albinisme et la vision : ce qu'il faut savoir", time:"4 h", xp:60,
+  desc:"Nystagmus, photophobie, acuité réduite : comprendre précisément ce que le système doit compenser.",
+  objectives:["Comprendre les effets visuels de l'albinisme (acuité, éblouissement, nystagmus)","Identifier ce qu'une aide technique peut et ne peut pas faire","Lister 10 situations quotidiennes problématiques (classe, bus, rue...)"],
+  res:[["OMS — Fiche sur l'albinisme","Référence","https://www.who.int/news-room/questions-and-answers/item/albinism"],
+       ["Genespoir — Association française albinisme","Association","https://www.genespoir.org"],
+       ["NOAH (US) — Ressources basse vision","Association","https://www.albinism.org"],
+       ["Under the Same Sun","Association","https://underthesamesun.com"]],
+  deliverable:"Document de 2 pages : profil des besoins visuels + 10 cas d'usage priorisés.",
+  jarvis:"Vous connaissez déjà le sujet mieux que la moyenne, Madame. Raison de plus pour le formaliser proprement au lieu de le garder en tête." },
+{ id:"m002", phase:0, title:"Entretiens utilisateurs & basse vision", time:"6 h", xp:80,
+  desc:"Interroger de vraies personnes concernées avant de décider à leur place. Méthode d'entretien, biais, synthèse.",
+  objectives:["Préparer une grille d'entretien semi-directif","Mener 3 à 5 entretiens (communauté, associations)","Synthétiser en besoins priorisés (méthode MoSCoW)"],
+  res:[["The Mom Test (résumé et méthode)","Méthode","https://www.momtestbook.com"],
+       ["W3C WAI — Comprendre les utilisateurs","Guide","https://www.w3.org/WAI/people-use-web/"],
+       ["Nielsen Norman Group — User Interviews","Article","https://www.nngroup.com/articles/user-interviews/"]],
+  deliverable:"Rapport d'entretiens : verbatims + tableau des besoins MoSCoW.",
+  jarvis:"Votre communauté WhatsApp francophone est un panel d'étude gratuit. Ne pas l'utiliser serait un gâchis remarquable." },
+{ id:"m003", phase:0, title:"État de l'art : OrCam, Envision, Aira & co", time:"5 h", xp:70,
+  desc:"Étudier les solutions existantes pour ne pas réinventer — et trouver ce qui manque pour l'albinisme spécifiquement.",
+  objectives:["Analyser 5 produits existants (fonctions, prix, limites)","Identifier le créneau non couvert (personnalisation albinisme, prix, français)","Rédiger un tableau comparatif"],
+  res:[["OrCam (lecture par IA portée)","Benchmark","https://www.orcam.com"],
+       ["Envision Glasses","Benchmark","https://www.letsenvision.com"],
+       ["Be My Eyes","Benchmark","https://www.bemyeyes.com"],
+       ["Aira","Benchmark","https://aira.io"]],
+  deliverable:"Tableau comparatif concurrents + paragraphe : votre différenciation.",
+  jarvis:"Découvrir un concurrent après le lancement est une expérience formatrice que je vous déconseille." },
+
+{ id:"m101", phase:1, title:"Python solide : CS50P", time:"40 h", xp:200,
+  desc:"Le langage de la vision par ordinateur et de l'IA. CS50P de Harvard, gratuit, sérieux, sans excuse possible.",
+  objectives:["Terminer les 10 semaines de CS50P (ou valider par les exercices)","Maîtriser fonctions, fichiers, exceptions, tests unitaires","Écrire un script manipulant des images avec Pillow"],
+  res:[["CS50P — Introduction to Programming with Python","Cours gratuit","https://cs50.harvard.edu/python/"],
+       ["Automate the Boring Stuff (livre gratuit en ligne)","Livre","https://automatetheboringstuff.com"],
+       ["Documentation Python officielle","Référence","https://docs.python.org/fr/3/"]],
+  deliverable:"Script Python : charge une photo, augmente le contraste, sauvegarde le résultat.",
+  jarvis:"Vous êtes en formation Full Stack, Madame. Ce module devrait être une promenade. S'il ne l'est pas, nous avons une conversation à avoir." },
+{ id:"m102", phase:1, title:"JavaScript & caméra dans le navigateur", time:"20 h", xp:150,
+  desc:"getUserMedia, canvas, manipulation de flux vidéo en temps réel. La base du prototype téléphone en une seule page HTML — votre spécialité.",
+  objectives:["Accéder à la caméra avec getUserMedia","Dessiner le flux dans un canvas et le modifier pixel par pixel","Implémenter un zoom numérique tactile"],
+  res:[["MDN — API MediaDevices / getUserMedia","Référence","https://developer.mozilla.org/fr/docs/Web/API/MediaDevices/getUserMedia"],
+       ["MDN — Canvas API","Référence","https://developer.mozilla.org/fr/docs/Web/API/Canvas_API"],
+       ["freeCodeCamp — JavaScript","Cours gratuit","https://www.freecodecamp.org/learn"]],
+  deliverable:"Page HTML unique : caméra en direct + zoom x1 à x8 + curseur de contraste.",
+  jarvis:"Un fichier HTML unique avec la caméra. C'est littéralement votre format fétiche appliqué à votre cause. Le destin a de l'humour." },
+{ id:"m103", phase:1, title:"Git & organisation du projet", time:"6 h", xp:60,
+  desc:"Versionner LUMEN proprement dès le premier jour : dépôt, branches, releases taguées — comme pour NAO OS.",
+  objectives:["Créer le dépôt lumen-prototype avec README et licence","Adopter un workflow de branches simple","Taguer une v0.1.0 dès le premier prototype"],
+  res:[["Learn Git Branching (interactif)","Cours gratuit","https://learngitbranching.js.org/?locale=fr_FR"],
+       ["Pro Git (livre gratuit)","Livre","https://git-scm.com/book/fr/v2"]],
+  deliverable:"Dépôt Git initialisé, README décrivant la vision du projet, tag v0.1.0.",
+  jarvis:"Vous avez déjà scellé un v1.0.0 sur NAO OS. Je m'attends donc à un dépôt exemplaire, pas à un dossier 'final_v2_VRAIfinal'." },
+
+{ id:"m201", phase:2, title:"OpenCV : les fondamentaux", time:"30 h", xp:250,
+  desc:"Le couteau suisse de la vision par ordinateur. Filtres, contraste, seuillage, contours — tout ce que verront les lunettes.",
+  objectives:["Suivre l'OpenCV Bootcamp officiel (gratuit)","Maîtriser lecture vidéo, conversion couleur, CLAHE (contraste adaptatif)","Appliquer un filtre anti-éblouissement sur un flux vidéo"],
+  res:[["OpenCV Bootcamp (officiel, gratuit)","Cours gratuit","https://opencv.org/university/free-courses/"],
+       ["Documentation OpenCV-Python","Référence","https://docs.opencv.org/4.x/d6/d00/tutorial_py_root.html"],
+       ["PyImageSearch — tutoriels","Tutoriels","https://pyimagesearch.com/blog/"]],
+  deliverable:"Script : flux webcam avec 4 modes commutables — normal, contraste renforcé (CLAHE), anti-éblouissement, inversion.",
+  jarvis:"CLAHE, Madame. Retenez cet acronyme : c'est lui qui rendra un tableau de classe lisible." },
+{ id:"m202", phase:2, title:"Théorie de la vision par ordinateur", time:"25 h", xp:180,
+  desc:"Comprendre ce que fait OpenCV au lieu de copier-coller. Convolutions, pyramides d'images, détection de caractéristiques.",
+  objectives:["Suivre une sélection de First Principles of Computer Vision","Comprendre convolution, gradient, détection de contours","Lire les chapitres pertinents de Szeliski (gratuit)"],
+  res:[["First Principles of Computer Vision (Columbia, YouTube)","Cours gratuit","https://fpcv.cs.columbia.edu"],
+       ["Computer Vision: Algorithms and Applications — Szeliski (PDF gratuit)","Livre","https://szeliski.org/Book/"]],
+  deliverable:"Fiche de synthèse : 5 concepts expliqués avec vos mots + schémas.",
+  jarvis:"Copier du code sans le comprendre fonctionne jusqu'au premier bug. Ensuite, cela devient du spiritisme." },
+{ id:"m203", phase:2, title:"Zoom, suivi d'objet & stabilisation", time:"30 h", xp:280,
+  desc:"Sélectionner un objet éloigné, zoomer dessus, le suivre malgré les tremblements. Le trio le plus demandé par vos cas d'usage.",
+  objectives:["Implémenter la sélection d'une zone (tap) et le zoom dessus","Utiliser un tracker OpenCV (CSRT/KCF) pour suivre l'objet","Stabiliser l'image zoomée (compensation de mouvement)"],
+  res:[["OpenCV — Object Tracking (tutoriel)","Tutoriel","https://docs.opencv.org/4.x/d9/df8/tutorial_root.html"],
+       ["PyImageSearch — OpenCV Object Tracking","Tutoriel","https://pyimagesearch.com/2018/07/30/opencv-object-tracking/"],
+       ["Learn OpenCV (Satya Mallick)","Tutoriels","https://learnopencv.com"]],
+  deliverable:"Démo : taper sur un panneau à l'écran → zoom stabilisé qui le suit. C'est le cœur de LUMEN v1.",
+  jarvis:"Le jour où ce module fonctionne, vous aurez quelque chose à montrer à un investisseur. Notez la coïncidence avec l'onglet prévu à cet effet." },
+
+{ id:"m301", phase:3, title:"OCR : Tesseract & EasyOCR", time:"20 h", xp:200,
+  desc:"Détecter et lire du texte : tableaux, panneaux, étiquettes, numéros de bus. Hébreu, français, anglais.",
+  objectives:["Installer et comparer Tesseract et EasyOCR","Extraire du texte depuis le flux caméra en temps quasi réel","Gérer le multilingue (fra + heb + eng)"],
+  res:[["Tesseract OCR (open source)","Outil","https://github.com/tesseract-ocr/tesseract"],
+       ["EasyOCR","Outil","https://github.com/JaidedAI/EasyOCR"],
+       ["PyImageSearch — OCR avec Tesseract","Tutoriel","https://pyimagesearch.com/2017/07/10/using-tesseract-ocr-python/"]],
+  deliverable:"Démo : pointer un texte imprimé → texte extrait affiché en grand à l'écran.",
+  jarvis:"L'hébreu se lit de droite à gauche et l'OCR le sait rarement. Vous verrez. Prévoyez du thé." },
+{ id:"m302", phase:3, title:"Synthèse vocale & commandes vocales", time:"15 h", xp:150,
+  desc:"Lire à voix haute ce qui est détecté, et obéir à 'Zoome sur le tableau'. Web Speech API côté navigateur, pyttsx3 côté Python.",
+  objectives:["Lire un texte détecté avec la synthèse vocale (fr/he)","Reconnaître 5 commandes vocales simples","Chaîner OCR → lecture vocale automatique"],
+  res:[["MDN — Web Speech API","Référence","https://developer.mozilla.org/fr/docs/Web/API/Web_Speech_API"],
+       ["pyttsx3 (TTS hors-ligne Python)","Outil","https://pypi.org/project/pyttsx3/"],
+       ["Vosk — reconnaissance vocale hors-ligne","Outil","https://alphacephei.com/vosk/"]],
+  deliverable:"Démo : 'Lis ce texte' → OCR → lecture à voix haute. Sans serveur.",
+  jarvis:"Un assistant vocal qui fonctionne hors-ligne : voilà qui devrait rappeler des souvenirs à l'architecte de NAO OS." },
+
+{ id:"m401", phase:4, title:"Détection d'objets : YOLO & MediaPipe", time:"30 h", xp:280,
+  desc:"Reconnaître bus, portes, obstacles, panneaux dans le flux vidéo. Modèles pré-entraînés d'abord, fine-tuning ensuite.",
+  objectives:["Faire tourner un modèle YOLO pré-entraîné sur le flux caméra","Utiliser MediaPipe pour la détection temps réel sur mobile","Mettre en évidence les objets détectés (contours, flèches)"],
+  res:[["Ultralytics YOLO (docs)","Outil","https://docs.ultralytics.com"],
+       ["Google MediaPipe","Outil","https://ai.google.dev/edge/mediapipe/solutions/guide"],
+       ["Kaggle Learn — Computer Vision","Cours gratuit","https://www.kaggle.com/learn/computer-vision"]],
+  deliverable:"Démo : détection en direct de personnes, bus et portes avec cadres colorés.",
+  jarvis:"Un modèle pré-entraîné détecte déjà 80 classes d'objets. Commencez par voler des géants avant de forger vos propres armes." },
+{ id:"m402", phase:4, title:"Portes, sorties & issues de secours", time:"25 h", xp:250,
+  desc:"Repérer une porte, lire 'Sortie/Exit/יציאה', distinguer une issue de secours, guider vers elle. Fonction sécurité — avec les avertissements qui s'imposent.",
+  objectives:["Détecter les panneaux de sortie (symboles verts normalisés + OCR)","Fine-tuner un petit modèle sur un dataset de portes","Donner une indication de direction ('à 5 m, légèrement à gauche')"],
+  res:[["Roboflow Universe — datasets portes/panneaux (gratuits)","Dataset","https://universe.roboflow.com"],
+       ["Ultralytics — entraîner sur données personnalisées","Tutoriel","https://docs.ultralytics.com/modes/train/"],
+       ["Google Colab (GPU gratuit pour entraîner)","Outil","https://colab.research.google.com"]],
+  deliverable:"Démo : dans un couloir, le panneau de sortie est encadré + annonce vocale de la direction. Avec mention claire : aide, pas système de sécurité certifié.",
+  jarvis:"Juridiquement, Madame, 'aide complémentaire' et 'système d'évacuation d'urgence' sont séparés par un abîme de responsabilité. Restez du bon côté de l'abîme." },
+{ id:"m403", phase:4, title:"Reconnaissance de visages enregistrés", time:"25 h", xp:250,
+  desc:"'Sarah est devant toi.' Uniquement des visages enregistrés volontairement, stockés localement. L'éthique n'est pas une option ici.",
+  objectives:["Encoder et comparer des visages (face_recognition / MediaPipe)","Stocker les encodages localement et chiffrés","Afficher/annoncer le prénom + position approximative"],
+  res:[["face_recognition (bibliothèque Python)","Outil","https://github.com/ageitgey/face_recognition"],
+       ["MediaPipe Face Detection","Outil","https://ai.google.dev/edge/mediapipe/solutions/vision/face_detector"],
+       ["CNIL — Biométrie : les règles","Référence","https://www.cnil.fr/fr/biometrie"]],
+  deliverable:"Démo : 3 visages enregistrés reconnus et nommés ; les inconnus restent anonymes, par conception.",
+  jarvis:"La différence entre une aide et une surveillance tient dans ce module. Je vous surveille — ironiquement." },
+
+{ id:"m501", phase:5, title:"RA sur navigateur : WebXR", time:"20 h", xp:200,
+  desc:"Superposer des informations au monde réel depuis une simple page web. Cohérent avec votre religion du fichier HTML unique.",
+  objectives:["Comprendre les concepts WebXR (sessions, ancres, hit-test)","Afficher une surcouche d'information sur le flux caméra","Évaluer les limites de WebXR pour LUMEN"],
+  res:[["MDN — WebXR Device API","Référence","https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API"],
+       ["Immersive Web (W3C)","Référence","https://immersiveweb.dev"],
+       ["Google — AR pour le web","Guide","https://developers.google.com/ar/develop/webxr"]],
+  deliverable:"Page web RA : étiquettes flottantes sur les objets détectés.",
+  jarvis:"" },
+{ id:"m502", phase:5, title:"RA native : ARCore / ARKit", time:"35 h", xp:280,
+  desc:"Quand le navigateur ne suffit plus : ancrage précis, meilleure caméra, performances. Android d'abord (part de marché oblige).",
+  objectives:["Installer un projet ARCore de démonstration","Comprendre ancres, plans, estimation de lumière","Porter le zoom+OCR dans une app native simple"],
+  res:[["Google ARCore — documentation","Référence","https://developers.google.com/ar"],
+       ["Apple ARKit — documentation","Référence","https://developer.apple.com/augmented-reality/"],
+       ["Unity Learn (gratuit)","Cours gratuit","https://learn.unity.com"]],
+  deliverable:"App Android minimale : flux caméra + zoom + OCR + lecture vocale.",
+  jarvis:"" },
+
+{ id:"m601", phase:6, title:"Raspberry Pi & caméra embarquée", time:"30 h", xp:250,
+  desc:"Premier pas hors du téléphone : un Pi, une caméra, un petit écran. Le squelette des futures lunettes.",
+  objectives:["Installer Raspberry Pi OS + module caméra","Faire tourner OpenCV sur le Pi (et mesurer les FPS, préparez-vous)","Afficher le flux traité sur un petit écran"],
+  res:[["Raspberry Pi — projets officiels","Tutoriels","https://projects.raspberrypi.org/fr-FR"],
+       ["Documentation caméra Raspberry Pi","Référence","https://www.raspberrypi.com/documentation/accessories/camera.html"],
+       ["Adafruit Learn","Tutoriels","https://learn.adafruit.com"]],
+  deliverable:"Prototype : Pi + caméra + écran affichant le flux avec contraste renforcé.",
+  jarvis:"Votre roadmap Engineering Academy trouve enfin sa raison d'être. Tout converge, Madame. Presque comme si quelqu'un l'avait planifié." },
+{ id:"m602", phase:6, title:"Calcul embarqué & optimisation", time:"30 h", xp:250,
+  desc:"Faire tenir l'IA dans un appareil porté : quantification, modèles légers, Jetson, batteries et thermique.",
+  objectives:["Convertir un modèle en version légère (TFLite/ONNX)","Évaluer Jetson Nano vs Pi 5 vs smartphone dédié","Estimer autonomie batterie et dissipation thermique"],
+  res:[["NVIDIA — Jetson AI Fundamentals (gratuit)","Cours gratuit","https://developer.nvidia.com/embedded/learn/jetson-ai-certification-programs"],
+       ["TensorFlow Lite / LiteRT","Référence","https://ai.google.dev/edge/litert"],
+       ["Edge Impulse (gratuit pour développeurs)","Outil","https://edgeimpulse.com"]],
+  deliverable:"Rapport comparatif matériel + un modèle de détection tournant à 10+ FPS sur cible embarquée.",
+  jarvis:"" },
+
+{ id:"m701", phase:7, title:"RGPD, biométrie & protection des données", time:"15 h", xp:150,
+  desc:"Des visages, des données de santé implicites, un public vulnérable : le trio qui attire les régulateurs. Faites-le bien dès le départ.",
+  objectives:["Comprendre les bases RGPD applicables (consentement, minimisation)","Concevoir le stockage local-d'abord des données biométriques","Rédiger une politique de confidentialité v1"],
+  res:[["CNIL — RGPD : par où commencer","Guide","https://www.cnil.fr/fr/rgpd-par-ou-commencer"],
+       ["CNIL — Biométrie","Guide","https://www.cnil.fr/fr/biometrie"],
+       ["Autorité israélienne de protection de la vie privée (PPA)","Référence","https://www.gov.il/en/departments/the_privacy_protection_authority"]],
+  deliverable:"Document 'Privacy by design' : quelles données, où, combien de temps, avec quel consentement.",
+  jarvis:"Vous vérifiez des dossiers d'Olim toute la journée, Madame. La rigueur documentaire ne devrait pas vous être étrangère." },
+{ id:"m702", phase:7, title:"Accessibilité & tests utilisateurs", time:"20 h", xp:180,
+  desc:"Tester avec de vraies personnes albinos, itérer, mesurer. Et appliquer les standards d'accessibilité à votre propre interface.",
+  objectives:["Appliquer WCAG à l'interface (contrastes, tailles, voix)","Organiser 3 sessions de test avec utilisateurs concernés","Mesurer : temps de lecture d'un panneau avec/sans LUMEN"],
+  res:[["W3C WAI — WCAG (référence accessibilité)","Référence","https://www.w3.org/WAI/standards-guidelines/wcag/"],
+       ["WebAIM","Guide","https://webaim.org"],
+       ["OMS — Technologies d'assistance","Référence","https://www.who.int/news-room/fact-sheets/detail/assistive-technology"]],
+  deliverable:"Rapport de tests : 3 utilisateurs, métriques avant/après, liste d'itérations.",
+  jarvis:"" },
+{ id:"m703", phase:7, title:"Dispositif d'assistance ou dispositif médical ?", time:"10 h", xp:120,
+  desc:"Selon ce que LUMEN prétend faire, il peut relever de la réglementation des dispositifs médicaux (CE/AMAR). Savoir où est la ligne.",
+  objectives:["Comprendre la frontière aide technique / dispositif médical","Identifier les exigences CE (Europe) et israéliennes (AMAR) le cas échéant","Formuler les allégations du produit prudemment"],
+  res:[["Commission européenne — Dispositifs médicaux (MDR)","Référence","https://health.ec.europa.eu/medical-devices-sector_en"],
+       ["Ministère de la Santé israélien — AMAR","Référence","https://www.gov.il/en/departments/units/medical_devices_amar"]],
+  deliverable:"Note d'une page : positionnement réglementaire de LUMEN + formulations à éviter.",
+  jarvis:"'Améliore le confort visuel' : acceptable. 'Corrige la vision' : bienvenue dans un audit. Choisissez vos mots comme vos filtres — avec soin." },
+
+{ id:"m801", phase:8, title:"YC Startup School", time:"20 h", xp:200,
+  desc:"Le cours de création de startup de Y Combinator. Gratuit, en ligne, sans équivalent. De l'idée au MVP au discours investisseur.",
+  objectives:["Suivre les vidéos clés (idée, MVP, talk to users, levée)","Rédiger la description LUMEN au format YC","Définir une métrique de progression hebdomadaire"],
+  res:[["YC Startup School (gratuit)","Cours gratuit","https://www.startupschool.org"],
+       ["YC — Essays de Paul Graham","Lecture","https://paulgraham.com/articles.html"]],
+  deliverable:"One-pager LUMEN : problème, solution, marché, pourquoi vous.",
+  jarvis:"" },
+{ id:"m802", phase:8, title:"Modèle économique & pitch deck", time:"25 h", xp:220,
+  desc:"Qui paie ? Assurances, associations, familles, États ? Construire le business model et le pitch deck de 10 slides.",
+  objectives:["Explorer 3 modèles de revenus (B2C, B2B2C via associations, subventions)","Chiffrer le marché (albinisme + basse vision, mondial et Israël/France)","Construire un pitch deck de 10 slides"],
+  res:[["Steve Blank — How to Build a Startup (Udacity, gratuit)","Cours gratuit","https://www.udacity.com/course/how-to-build-a-startup--ep245"],
+       ["MIT OCW — New Enterprises 15.390","Cours gratuit","https://ocw.mit.edu/courses/15-390-new-enterprises-spring-2013/"],
+       ["Kauffman Founders School","Cours gratuit","https://www.entrepreneurship.org/learning-paths"],
+       ["Guide pitch deck Sequoia","Modèle","https://www.sequoiacap.com/article/writing-a-business-plan/"]],
+  deliverable:"Pitch deck v1 (10 slides) + tableau du modèle économique.",
+  jarvis:"Un pitch deck n'est pas une liste de fonctionnalités, Madame. C'est une histoire avec des chiffres. Vous savez raconter — ajoutez les chiffres." },
+{ id:"m803", phase:8, title:"Financement : subventions & premiers contacts", time:"15 h", xp:180,
+  desc:"Cartographier les sources d'argent non-dilutives (subventions) puis les accélérateurs. Puis passer à l'onglet Investisseurs et agir.",
+  objectives:["Lister les subventions accessibles (Autorité de l'innovation, UE, fondations)","Préparer un e-mail de premier contact type","Contacter 3 organismes de l'onglet Investisseurs"],
+  res:[["Autorité israélienne de l'innovation","Subventions","https://innovationisrael.org.il/en/"],
+       ["EU Funding & Tenders Portal","Subventions","https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/home"],
+       ["Guide : Grant writing (Purdue OWL)","Guide","https://owl.purdue.edu/owl/subject_specific_writing/professional_technical_writing/grant_writing/index.html"]],
+  deliverable:"Tableur de 15 sources de financement + 3 e-mails envoyés. Envoyés, pas rédigés.",
+  jarvis:"La différence entre un projet et une startup tient souvent dans trois e-mails que personne n'ose envoyer." }
+];
+
+/* =====================================================
+   DATA — FEED SCIENCES & CODE
+===================================================== */
+const FEED_POSTS = [
+  {id:"cpp", group:"Code", theme:"code", icon:"⚙️", topic:"C++", level:"Fondations", title:"Références : modifier sans copier", kicker:"Mémoire & performance", prompt:"Tap : comprendre pourquoi & change vraiment la variable.",
+   visual:`<div class="feed-mini-code"><span class="kw">int</span> score = <span class="num">10</span>;
+<span class="kw">int</span>& ref = score;
+ref += <span class="num">5</span>;
+
+<span class="cm">// score vaut maintenant 15</span></div>`,
+   explain:"Une référence C++ est un autre nom pour une variable existante. Modifier ref modifie score, sans créer une copie.",
+   points:["& dans la déclaration crée une référence.","Une référence doit être initialisée immédiatement.","Très utile pour passer de gros objets à une fonction sans les copier."],
+   code:`void upgrade(int& level) {\n  level++;\n}`},
+  {id:"python", group:"Code", theme:"code", icon:"🐍", topic:"Python", level:"Fondations", title:"Compréhension de liste", kicker:"Transformer proprement", prompt:"Une ligne lisible vaut mieux que six lignes héroïquement inutiles.",
+   visual:`<div class="feed-mini-code">notes = [<span class="num">8</span>, <span class="num">14</span>, <span class="num">17</span>]
+valides = [n <span class="kw">for</span> n <span class="kw">in</span> notes <span class="kw">if</span> n >= <span class="num">10</span>]
+
+<span class="cm"># [14, 17]</span></div>`,
+   explain:"Une compréhension de liste construit une nouvelle liste en combinant une boucle et, si nécessaire, un filtre.",
+   points:["Expression d'abord : ce que l'on ajoute.","Puis for : ce que l'on parcourt.","Enfin if : ce que l'on conserve."],
+   code:`squares = [x ** 2 for x in range(6)]`},
+  {id:"javascript", group:"Web", theme:"web", icon:"JS", topic:"JavaScript", level:"Fondations", title:"map ne modifie pas le tableau", kicker:"Tableaux immuables", prompt:"Tap pour distinguer map, filter et forEach sans invoquer la magie noire.",
+   visual:`<div class="feed-mini-code"><span class="kw">const</span> prix = [<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>];
+<span class="kw">const</span> ttc = prix.<span class="fn">map</span>(p => p * <span class="num">1.17</span>);
+
+<span class="cm">// prix reste inchangé</span></div>`,
+   explain:"map applique une transformation à chaque élément et renvoie un nouveau tableau de même longueur.",
+   points:["map = transformer.","filter = sélectionner.","forEach = exécuter une action, sans nouveau tableau utile."],
+   code:`const names = users.map(user => user.name);`},
+  {id:"html", group:"Web", theme:"web", icon:"&lt;&gt;", topic:"HTML", level:"Web", title:"Le HTML donne du sens", kicker:"Sémantique avant décoration", prompt:"Une div partout fonctionne. Un marteau aussi peut ouvrir une boîte de conserve.",
+   visual:`<div class="feed-mini-code"><span class="kw">&lt;article&gt;</span>
+  <span class="kw">&lt;h2&gt;</span>La loi d'Ohm<span class="kw">&lt;/h2&gt;</span>
+  <span class="kw">&lt;p&gt;</span>U = R × I<span class="kw">&lt;/p&gt;</span>
+<span class="kw">&lt;/article&gt;</span></div>`,
+   explain:"Les balises sémantiques décrivent le rôle du contenu. Elles améliorent l'accessibilité, le SEO et la maintenance.",
+   points:["main : contenu principal unique.","article : contenu autonome.","button : action ; a : navigation."],
+   code:`<button type="button">Calculer</button>`},
+  {id:"css", group:"Web", theme:"web", icon:"#", topic:"CSS", level:"Web", title:"Grid : placer sans bricoler", kicker:"Mise en page", prompt:"Tap pour comprendre fr, minmax et auto-fit — le trio qui évite 47 media queries.",
+   visual:`<div style="width:88%;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;transform:rotate(-2deg)">${[1,2,3,4,5,6].map((n,i)=>`<div style="height:${55+(i%3)*18}px;border-radius:13px;background:rgba(255,255,255,${.18+i*.04});border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;font-weight:900">${n}</div>`).join("")}</div>`,
+   explain:"CSS Grid organise une interface en lignes et colonnes. auto-fit remplit l'espace disponible et minmax fixe une largeur minimale flexible.",
+   points:["1fr = une fraction de l'espace restant.","gap gère l'espacement sans marges acrobatiques.","minmax(180px, 1fr) rend la grille responsive."],
+   code:`grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));`},
+  {id:"react", group:"Web", theme:"web", icon:"⚛", topic:"React", level:"Composants", title:"L'état déclenche le rendu", kicker:"UI déclarative", prompt:"Tu décris le résultat. React se charge du DOM, ce majordome certes moins distingué que moi.",
+   visual:`<div class="feed-mini-code"><span class="kw">const</span> [count, setCount] = <span class="fn">useState</span>(<span class="num">0</span>);
+
+&lt;button onClick={() =>
+  setCount(c => c + <span class="num">1</span>)}&gt;
+  {count}
+&lt;/button&gt;</div>`,
+   explain:"useState conserve une valeur entre les rendus. Appeler sa fonction de mise à jour demande à React de recalculer l'interface.",
+   points:["Ne modifie pas l'état directement.","La forme c => c + 1 évite les valeurs périmées.","Un composant doit rester prévisible pour les mêmes props."],
+   code:`setItems(items => [...items, newItem]);`},
+  {id:"vite", group:"Web", theme:"web", icon:"⚡", topic:"Vite", level:"Outils", title:"Le serveur démarre vite", kicker:"Build moderne", prompt:"Vite sert les modules directement en développement puis bundle pour la production.",
+   visual:`<div style="text-align:center"><div style="font-size:6em;filter:drop-shadow(0 14px 20px rgba(0,0,0,.3))">⚡</div><div class="feed-mini-code" style="margin-top:-6px;width:auto">npm create vite@latest</div></div>`,
+   explain:"Vite utilise les modules ES natifs pendant le développement, ce qui évite de rebundler toute l'application à chaque modification.",
+   points:["npm run dev : serveur local.","npm run build : fichiers optimisés.","import.meta.env : variables d'environnement côté Vite."],
+   code:`const api = import.meta.env.VITE_API_URL;`},
+  {id:"redux", group:"Web", theme:"web", icon:"↻", topic:"Redux", level:"État global", title:"Une seule source de vérité", kicker:"Flux prévisible", prompt:"Action → reducer → nouvel état → interface. Oui, même l'ordre a enfin été inventé.",
+   visual:`<svg class="feed-svg" viewBox="0 0 420 280" aria-label="Flux Redux"><defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="white"/></marker></defs><g fill="none" stroke="white" stroke-width="3" opacity=".85" marker-end="url(#arr)"><path d="M110 65 C250 10 340 65 320 128"/><path d="M312 170 C240 250 120 235 95 155"/></g><g font-family="Segoe UI" font-weight="800" text-anchor="middle"><rect x="38" y="54" width="120" height="70" rx="18" fill="rgba(255,255,255,.18)" stroke="rgba(255,255,255,.35)"/><text x="98" y="95" fill="white">ACTION</text><rect x="262" y="110" width="120" height="70" rx="18" fill="rgba(255,255,255,.18)" stroke="rgba(255,255,255,.35)"/><text x="322" y="151" fill="white">REDUCER</text><rect x="55" y="160" width="120" height="70" rx="18" fill="rgba(255,255,255,.18)" stroke="rgba(255,255,255,.35)"/><text x="115" y="202" fill="white">STORE</text></g></svg>`,
+   explain:"Redux centralise l'état partagé. Les composants dispatchent des actions ; les reducers produisent un nouvel état sans modifier l'ancien.",
+   points:["Action : décrit ce qui s'est passé.","Reducer : fonction pure état + action → nouvel état.","Selector : extrait les données utiles du store."],
+   code:`dispatch(cartItemAdded(product));`},
+  {id:"typescript", group:"Web", theme:"web", icon:"TS", topic:"TypeScript", level:"Types", title:"Le bug avant l'exécution", kicker:"Contrats de données", prompt:"TypeScript ne rend pas le code intelligent. Il empêche simplement certaines sottises très humaines.",
+   visual:`<div class="feed-mini-code"><span class="kw">type</span> User = {
+  id: <span class="kw">number</span>;
+  name: <span class="kw">string</span>;
+};
+
+<span class="kw">const</span> greet = (u: User) =>
+  <span class="str">\`Bonjour \${u.name}\`</span>;</div>`,
+   explain:"TypeScript ajoute des types statiques à JavaScript. Le compilateur détecte les incohérences avant que l'utilisateur ne les découvre à ta place.",
+   points:["type/interface décrivent la forme des données.","Union : 'idle' | 'loading' | 'error'.","unknown est plus sûr que any."],
+   code:`function parse(value: unknown): string {\n  return String(value);\n}`},
+  {id:"async", group:"Web", theme:"web", icon:"⏳", topic:"Async", level:"Asynchrone", title:"await suspend, il ne bloque pas tout", kicker:"Promesses", prompt:"Tap pour suivre l'ordre réel d'exécution. Le temps, cette API notoirement mal documentée.",
+   visual:`<div class="feed-mini-code"><span class="kw">async function</span> <span class="fn">load</span>() {
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(url);
+  <span class="kw">if</span> (!res.ok) <span class="kw">throw new</span> Error();
+  <span class="kw">return await</span> res.json();
+}</div>`,
+   explain:"await met en pause la fonction async jusqu'au règlement de la Promise, mais laisse la boucle d'événements traiter le reste de l'application.",
+   points:["Une fonction async renvoie toujours une Promise.","try/catch capture les rejets avec await.","Promise.all lance plusieurs tâches indépendantes en parallèle."],
+   code:`const [user, posts] = await Promise.all([getUser(), getPosts()]);`},
+  {id:"api", group:"Systèmes", theme:"systems", icon:"⇄", topic:"API", level:"Architecture", title:"Une API est un contrat", kicker:"Client ↔ serveur", prompt:"La route, la méthode, les données et les erreurs doivent parler la même langue.",
+   visual:`<svg class="feed-svg" viewBox="0 0 440 270"><defs><marker id="apiarr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="white"/></marker></defs><rect x="25" y="74" width="135" height="122" rx="24" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.35)"/><rect x="280" y="74" width="135" height="122" rx="24" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.35)"/><text x="92" y="130" text-anchor="middle" fill="white" font-size="22" font-weight="800">CLIENT</text><text x="347" y="130" text-anchor="middle" fill="white" font-size="22" font-weight="800">API</text><path d="M170 110 H266" stroke="white" stroke-width="4" marker-end="url(#apiarr)"/><path d="M270 164 H174" stroke="white" stroke-width="4" marker-end="url(#apiarr)"/><text x="220" y="96" text-anchor="middle" fill="white" font-size="13">GET /circuits</text><text x="220" y="190" text-anchor="middle" fill="white" font-size="13">200 JSON</text></svg>`,
+   explain:"Une API expose des opérations et des données selon des règles définies. En REST, les méthodes HTTP indiquent l'intention de la requête.",
+   points:["GET lit ; POST crée ; PATCH modifie ; DELETE supprime.","2xx succès, 4xx erreur client, 5xx erreur serveur.","Valide toujours les données reçues, même si le frontend jure être innocent."],
+   code:`fetch('/api/lessons', { method: 'GET' });`},
+  {id:"devops", group:"Systèmes", theme:"systems", icon:"∞", topic:"DevOps", level:"Déploiement", title:"CI/CD : du commit au serveur", kicker:"Automatisation", prompt:"Chaque étape automatisée est une occasion de moins d'oublier une catastrophe manuelle.",
+   visual:`<svg class="feed-svg" viewBox="0 0 450 280"><path d="M85 140 C85 55 205 55 225 140 C245 225 365 225 365 140 C365 55 245 55 225 140 C205 225 85 225 85 140Z" fill="none" stroke="white" stroke-width="18" opacity=".8"/><g fill="white" font-family="Segoe UI" font-weight="800" text-anchor="middle"><text x="135" y="137">BUILD</text><text x="225" y="73">TEST</text><text x="315" y="137">DEPLOY</text><text x="225" y="225">MONITOR</text></g></svg>`,
+   explain:"DevOps rapproche développement et exploitation. Une pipeline CI/CD teste, construit et déploie le logiciel de façon reproductible.",
+   points:["CI : intégrer et tester chaque changement.","CD : livrer ou déployer automatiquement.","Monitoring : savoir que ça brûle avant le message du client."],
+   code:`git push → tests → build → deploy`},
+  {id:"circuit", group:"Sciences", theme:"electric", icon:"⚡", topic:"Circuit électrique", level:"Électricité", title:"La loi d'Ohm relie U, R et I", kicker:"U = R × I", prompt:"Ici : 9 V et 300 Ω. Trouve le courant avant de retourner la carte.",
+   visual:`<svg class="feed-svg" viewBox="0 0 480 300" aria-label="Circuit batterie résistance LED"><defs><marker id="earr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd166"/></marker><filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M90 75 H370 V225 H90" fill="none" stroke="white" stroke-width="5" stroke-linecap="round"/><line x1="90" y1="110" x2="90" y2="190" stroke="white" stroke-width="5"/><line x1="72" y1="125" x2="108" y2="125" stroke="white" stroke-width="5"/><line x1="78" y1="175" x2="102" y2="175" stroke="white" stroke-width="9"/><path d="M190 75 l14 -18 20 36 20 -36 20 36 20 -36 14 18" fill="none" stroke="#ffb84d" stroke-width="5"/><circle cx="370" cy="150" r="35" fill="rgba(255,220,90,.18)" stroke="#ffe066" stroke-width="5" filter="url(#glow)"/><path d="M352 150 h36 M370 132 v36" stroke="#ffe066" stroke-width="4"/><path d="M125 55 H170" stroke="#ffd166" stroke-width="4" marker-end="url(#earr)"/><text x="90" y="220" fill="white" font-size="17" text-anchor="middle">9 V</text><text x="244" y="128" fill="white" font-size="17" text-anchor="middle">300 Ω</text><text x="370" y="215" fill="white" font-size="17" text-anchor="middle">LED</text></svg>`,
+   explain:"I = U / R = 9 / 300 = 0,03 A, soit 30 mA. En pratique, il faut tenir compte de la tension directe de la LED avant de choisir la résistance.",
+   points:["Tension U en volts : pousse les charges.","Courant I en ampères : débit de charges.","Résistance R en ohms : limite le courant."],
+   code:`I = U / R = 9 / 300 = 0.03 A`},
+  {id:"physics", group:"Sciences", theme:"science", icon:"↗", topic:"Physique", level:"Mécanique", title:"Le projectile tombe pendant qu'il avance", kicker:"Mouvement en 2D", prompt:"Horizontal et vertical se calculent séparément. L'univers aime les composants indépendants.",
+   visual:`<svg class="feed-svg" viewBox="0 0 480 300"><defs><marker id="parr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="white"/></marker></defs><path d="M55 245 H430" stroke="rgba(255,255,255,.35)" stroke-width="3"/><path d="M70 235 Q240 20 420 235" fill="none" stroke="#ffd0a8" stroke-width="6" stroke-dasharray="10 8"/><circle cx="70" cy="235" r="12" fill="white"/><circle cx="245" cy="126" r="12" fill="#ffd0a8"/><circle cx="420" cy="235" r="12" fill="white"/><path d="M77 226 L145 145" stroke="white" stroke-width="4" marker-end="url(#parr)"/><path d="M245 65 V110" stroke="white" stroke-width="4" marker-end="url(#parr)"/><text x="142" y="132" fill="white" font-size="17">v₀</text><text x="265" y="78" fill="white" font-size="17">g</text><text x="240" y="278" fill="white" font-size="17" text-anchor="middle">x(t) uniforme · y(t) accéléré</text></svg>`,
+   explain:"Sans frottements, la vitesse horizontale reste constante tandis que la gravité accélère le projectile vers le bas.",
+   points:["x(t) = v₀ cos(θ) · t.","y(t) = y₀ + v₀ sin(θ) · t − ½gt².","Au sommet, la vitesse verticale vaut 0, pas la vitesse totale."],
+   code:`y = y0 + v0y * t - 0.5 * g * t ** 2`},
+  {id:"chemistry", group:"Sciences", theme:"science", icon:"🧪", topic:"Chimie", level:"Atomes", title:"Une liaison partage des électrons", kicker:"Molécules", prompt:"H₂O est polaire : l'oxygène attire davantage les électrons.",
+   visual:`<svg class="feed-svg" viewBox="0 0 460 300"><defs><filter id="molglow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><line x1="120" y1="205" x2="220" y2="135" stroke="white" stroke-width="12" stroke-linecap="round" opacity=".6"/><line x1="340" y1="205" x2="240" y2="135" stroke="white" stroke-width="12" stroke-linecap="round" opacity=".6"/><circle cx="230" cy="115" r="62" fill="#ff7b7b" filter="url(#molglow)"/><circle cx="105" cy="215" r="38" fill="#eaf2ff"/><circle cx="355" cy="215" r="38" fill="#eaf2ff"/><text x="230" y="126" fill="#2a1010" font-size="35" font-weight="900" text-anchor="middle">O</text><text x="105" y="226" fill="#162034" font-size="26" font-weight="900" text-anchor="middle">H</text><text x="355" y="226" fill="#162034" font-size="26" font-weight="900" text-anchor="middle">H</text><text x="230" y="285" fill="white" font-size="18" text-anchor="middle">angle ≈ 104,5°</text></svg>`,
+   explain:"Dans H₂O, l'oxygène partage une paire d'électrons avec chaque hydrogène. Sa plus forte électronégativité rend les liaisons polaires.",
+   points:["Liaison covalente : partage d'électrons.","La forme coudée vient des doublets non liants de l'oxygène.","La polarité explique en partie l'excellent pouvoir solvant de l'eau."],
+   code:`2 H + O → H₂O  (modèle simplifié)`}
+];
+
+FEED_POSTS.push(
+  {id:"cpp-pointers", group:"Code", theme:"code", icon:"⚙️", topic:"C++", level:"Mémoire", title:"Pointeur : stocker une adresse", kicker:"Accès indirect", prompt:"Retourne la carte si * et & commencent à te regarder bizarrement.",
+   visual:`<div class="feed-mini-code"><span class="kw">int</span> value = <span class="num">42</span>;
+<span class="kw">int</span>* ptr = &value;
+*ptr = <span class="num">99</span>;
+
+<span class="cm">// value vaut 99</span></div>`,
+   explain:"Un pointeur contient l'adresse mémoire d'une variable. En déréférençant avec *, on accède à la valeur stockée à cette adresse.",
+   points:["ptr stocke une adresse, pas la valeur.","&value signifie 'adresse de value'.","*ptr signifie 'valeur pointée par ptr'."],
+   code:`int* ptr = &value;
+*ptr = 99;`},
+  {id:"python-dict", group:"Code", theme:"code", icon:"🐍", topic:"Python", level:"Structures", title:"Dictionnaire : clé → valeur", kicker:"Organiser les données", prompt:"Parce que tout ranger dans des listes finit généralement en tragédie.",
+   visual:`<div class="feed-mini-code">etudiant = {
+  <span class="str">"nom"</span>: <span class="str">"Naomie"</span>,
+  <span class="str">"note"</span>: <span class="num">18</span>
+}
+
+etudiant[<span class="str">"note"</span>]</div>`,
+   explain:"Un dictionnaire associe des clés uniques à des valeurs. Il est parfait pour stocker des objets simples avec des propriétés nommées.",
+   points:["Accès par clé : d['nom'].","Ajout/modification : d['note']=19.","items() permet de parcourir clé et valeur."],
+   code:`for cle, valeur in etudiant.items():
+    print(cle, valeur)`},
+  {id:"javascript-destructuring", group:"Web", theme:"web", icon:"JS", topic:"JavaScript", level:"Syntaxe", title:"Déstructurer sans drama", kicker:"Objets & tableaux", prompt:"Retire proprement ce dont tu as besoin. Comme une personne organisée, concept audacieux.",
+   visual:`<div class="feed-mini-code"><span class="kw">const</span> user = { name: <span class="str">'Lia'</span>, age: <span class="num">22</span> };
+<span class="kw">const</span> { name, age } = user;
+
+<span class="cm">// name = 'Lia'</span></div>`,
+   explain:"La déstructuration extrait rapidement des valeurs d'un objet ou d'un tableau vers des variables.",
+   points:["const { name } = user extrait la propriété name.","const [a,b] = array fonctionne avec les tableaux.","On peut renommer : const { name: prenom } = user."],
+   code:`const [first, second] = numbers;`},
+  {id:"html-form", group:"Web", theme:"web", icon:"&lt;&gt;", topic:"HTML", level:"Formulaires", title:"Label + input : duo obligatoire", kicker:"Accessibilité", prompt:"Un champ sans label, c'est de la paresse emballée en interface.",
+   visual:`<div class="feed-mini-code"><span class="kw">&lt;label</span> for=<span class="str">"email"</span><span class="kw">&gt;</span>Email<span class="kw">&lt;/label&gt;</span>
+<span class="kw">&lt;input</span> id=<span class="str">"email"</span> type=<span class="str">"email"</span><span class="kw">&gt;</span></div>`,
+   explain:"Le label décrit le champ et améliore énormément l'accessibilité. Cliquer sur le label place aussi le focus dans le champ.",
+   points:["for du label = id de l'input.","type='email' aide à la validation et au clavier mobile.","placeholder ne remplace jamais un label."],
+   code:`<label for="name">Nom</label>`},
+  {id:"css-flex", group:"Web", theme:"web", icon:"#", topic:"CSS", level:"Layout", title:"Flexbox aligne sur un axe", kicker:"Disposition souple", prompt:"Quand tu veux aligner, centrer, espacer — sans sacrifice rituel au CSS.",
+   visual:`<div style="width:88%;display:flex;gap:10px;justify-content:space-between;align-items:center"><div style="width:58px;height:58px;border-radius:14px;background:rgba(255,255,255,.18)"></div><div style="width:82px;height:34px;border-radius:12px;background:rgba(255,255,255,.26)"></div><div style="width:58px;height:58px;border-radius:14px;background:rgba(255,255,255,.18)"></div></div>`,
+   explain:"Flexbox dispose des éléments sur un axe principal. Il est idéal pour les barres d'actions, menus et alignements simples.",
+   points:["justify-content agit sur l'axe principal.","align-items agit sur l'axe secondaire.","gap gère l'espacement proprement."],
+   code:`display:flex; justify-content:center; align-items:center;`},
+  {id:"react-props", group:"Web", theme:"web", icon:"⚛", topic:"React", level:"Composants", title:"Les props font parler les composants", kicker:"Entrées d'un composant", prompt:"Un composant sans props finit souvent par devenir égocentrique et inutile.",
+   visual:`<div class="feed-mini-code"><span class="kw">function</span> Card({ title }) {
+  <span class="kw">return</span> &lt;h2&gt;{title}&lt;/h2&gt;;
+}
+
+&lt;Card title=<span class="str">"Physique"</span> /&gt;</div>`,
+   explain:"Les props sont les données passées d'un parent à un composant enfant. Elles rendent le composant réutilisable.",
+   points:["Les props sont en lecture seule.","Le parent contrôle les valeurs transmises.","On peut déstructurer directement dans les paramètres."],
+   code:`<LessonCard title="Circuits" level="débutant" />`},
+  {id:"vite-env", group:"Web", theme:"web", icon:"⚡", topic:"Vite", level:"Configuration", title:"Variables d'environnement", kicker:"Configuration propre", prompt:"Évite de cacher des URL en dur partout comme un amateur trop confiant.",
+   visual:`<div class="feed-mini-code">VITE_API_URL=<span class="str">https://api.exemple.com</span>
+
+<span class="kw">const</span> url =
+  import.meta.env.VITE_API_URL;</div>`,
+   explain:"Dans Vite, seules les variables préfixées par VITE_ sont exposées au code client via import.meta.env.",
+   points:[".env pour le local ou des environnements dédiés.","Ne jamais mettre de secret réel côté frontend.","Redémarre le serveur dev après ajout d'une variable."],
+   code:`const mode = import.meta.env.MODE;`},
+  {id:"redux-slice", group:"Web", theme:"web", icon:"↻", topic:"Redux", level:"Toolkit", title:"Slice : état + reducers réunis", kicker:"Redux Toolkit", prompt:"Enfin un peu d'ordre dans Redux. Il était temps.",
+   visual:`<div class="feed-mini-code"><span class="kw">const</span> counterSlice = createSlice({
+  name: <span class="str">'counter'</span>,
+  initialState: { value: <span class="num">0</span> },
+  reducers: { increment: s => { s.value++; } }
+});</div>`,
+   explain:"createSlice regroupe le nom, l'état initial et les reducers. Redux Toolkit réduit le boilerplate classique.",
+   points:["Les actions sont générées automatiquement.","Immer permet une syntaxe apparemment mutable.","Un slice cible une portion claire du store."],
+   code:`export const { increment } = counterSlice.actions;`},
+  {id:"ts-union", group:"Web", theme:"web", icon:"TS", topic:"TypeScript", level:"Types", title:"Union types : plusieurs états possibles", kicker:"États contrôlés", prompt:"Parce qu'un status libre finit souvent en 'machin', 'ok2' ou autre hérésie.",
+   visual:`<div class="feed-mini-code"><span class="kw">type</span> Status =
+  <span class="str">'idle'</span> | <span class="str">'loading'</span> | <span class="str">'error'</span>;
+
+<span class="kw">let</span> state: Status = <span class="str">'idle'</span>;</div>`,
+   explain:"Un type union limite une variable à un ensemble précis de valeurs autorisées.",
+   points:["Très utile pour les états d'interface.","Évite les chaînes arbitraires et les fautes de frappe.","Le compilateur force à traiter les cas possibles."],
+   code:`function render(status: Status) {
+  if (status === 'loading') return '...';
+}`},
+  {id:"async-trycatch", group:"Web", theme:"web", icon:"⏳", topic:"Async", level:"Réseau", title:"Toujours gérer les erreurs", kicker:"try / catch", prompt:"Parce que 'ça marche chez moi' n'a jamais consolé un utilisateur.",
+   visual:`<div class="feed-mini-code"><span class="kw">try</span> {
+  <span class="kw">const</span> data = <span class="kw">await</span> fetchLessons();
+} <span class="kw">catch</span> (error) {
+  console.error(error);
+}</div>`,
+   explain:"Les opérations asynchrones peuvent échouer. try/catch permet de réagir proprement aux erreurs avec await.",
+   points:["Capture les rejets de Promise avec await.","Affiche un message utilisateur en plus du log technique.","finally sert au nettoyage, par exemple retirer un loader."],
+   code:`try { await save(); } catch (e) { setError(true); }`},
+  {id:"api-json", group:"Systèmes", theme:"systems", icon:"⇄", topic:"API", level:"Données", title:"JSON : le langage d'échange préféré du web", kicker:"Objets sérialisés", prompt:"Des données structurées, lisibles, et suffisamment strictes pour éviter l'anarchie.",
+   visual:`<div class="feed-mini-code">{
+  <span class="str">"topic"</span>: <span class="str">"React"</span>,
+  <span class="str">"level"</span>: <span class="str">"beginner"</span>
+}</div>`,
+   explain:"JSON représente des objets et tableaux sous forme de texte. Il est omniprésent dans les API web.",
+   points:["Clés entre guillemets doubles.","Pas de fonctions ni commentaires.","JSON.parse convertit en objet JavaScript."],
+   code:`const lesson = await response.json();`},
+  {id:"devops-docker", group:"Systèmes", theme:"systems", icon:"∞", topic:"DevOps", level:"Conteneurs", title:"Docker emballe l'application", kicker:"Même environnement partout", prompt:"Le célèbre 'chez moi ça marche' perd soudain tout son charme.",
+   visual:`<div class="feed-mini-code"><span class="kw">FROM</span> node:<span class="num">20</span>
+<span class="kw">WORKDIR</span> /app
+<span class="kw">COPY</span> . .
+<span class="kw">RUN</span> npm install</div>`,
+   explain:"Docker crée une image reproductible contenant l'application et ses dépendances. On réduit ainsi les écarts entre machines.",
+   points:["Image = modèle ; conteneur = instance en cours d'exécution.","WORKDIR définit le dossier actif.","Une image bien construite accélère les déploiements."],
+   code:`docker build -t lumen-feed .`},
+  {id:"circuit-series", group:"Sciences", theme:"electric", icon:"⚡", topic:"Circuit électrique", level:"Électricité", title:"En série, le courant est le même partout", kicker:"Addition des résistances", prompt:"Oui, même si les composants sont plusieurs, le courant reste d'une remarquable fidélité.",
+   visual:`<svg class="feed-svg" viewBox="0 0 460 280"><path d="M70 75 H390 V205 H70 Z" fill="none" stroke="white" stroke-width="5"/><path d="M150 75 l12 -16 18 32 18 -32 18 32 18 -32 12 16" fill="none" stroke="#ffd166" stroke-width="5"/><path d="M275 75 l12 -16 18 32 18 -32 18 32 18 -32 12 16" fill="none" stroke="#8ad4ff" stroke-width="5"/><text x="205" y="125" fill="white" font-size="17" text-anchor="middle">R₁</text><text x="330" y="125" fill="white" font-size="17" text-anchor="middle">R₂</text><text x="70" y="160" fill="white" font-size="17" text-anchor="middle">+</text></svg>`,
+   explain:"Dans un circuit en série, le courant est identique dans chaque composant. Les résistances s'additionnent : Req = R1 + R2 + ...",
+   points:["Un seul chemin pour le courant.","La tension se répartit entre les composants.","Si un composant s'ouvre, tout le circuit s'arrête."],
+   code:`R_eq = R1 + R2`},
+  {id:"physics-newton", group:"Sciences", theme:"science", icon:"↗", topic:"Physique", level:"Dynamique", title:"F = m × a", kicker:"Deuxième loi de Newton", prompt:"Force nette, masse, accélération. Sobre, brutal, efficace — presque élégant.",
+   visual:`<svg class="feed-svg" viewBox="0 0 460 280"><rect x="100" y="135" width="120" height="80" rx="16" fill="rgba(255,255,255,.18)" stroke="white"/><path d="M235 175 H350" stroke="white" stroke-width="6"/><path d="M350 175 l-18 -12 v24 Z" fill="white"/><text x="160" y="183" fill="white" font-size="26" text-anchor="middle">m</text><text x="295" y="160" fill="white" font-size="24" text-anchor="middle">F</text><text x="230" y="250" fill="white" font-size="18" text-anchor="middle">plus F est grande, plus a augmente</text></svg>`,
+   explain:"L'accélération d'un objet dépend de la force nette appliquée et de sa masse. À force égale, un objet plus massif accélère moins.",
+   points:["F en newtons, m en kilogrammes, a en m/s².","On considère la somme vectorielle des forces.","Si la force nette est nulle, l'accélération est nulle."],
+   code:`a = F / m`},
+  {id:"chemistry-ph", group:"Sciences", theme:"science", icon:"🧪", topic:"Chimie", level:"Solutions", title:"Le pH mesure l'acidité", kicker:"Échelle logarithmique", prompt:"Chaque petite unité cache un facteur dix. La chimie aime dramatiser ses chiffres.",
+   visual:`<div style="width:90%;display:grid;grid-template-columns:repeat(7,1fr);gap:8px">${["#ff5e5e","#ff8b4d","#ffb347","#ffd966","#c7e86b","#7bdc8b","#56c8e8"].map((c,i)=>`<div style="height:115px;border-radius:14px;background:${c};display:grid;place-items:end center;padding:10px;font-weight:900;color:#102">${i+1}</div>`).join("")}</div>`,
+   explain:"Le pH indique la concentration en ions H₃O⁺. Une solution de pH 3 est dix fois plus acide qu'une solution de pH 4.",
+   points:["pH < 7 : acide.","pH = 7 : neutre.","pH > 7 : basique."],
+   code:`pH = -log10([H3O+])`}
+);
+
+
+/* 45 cartes supplémentaires : 5 cartes par matière au total. */
+const EXTRA_FEED_POSTS = [{"id":"cpp-vector","group":"Code","theme":"code","icon":"⚙️","topic":"C++","level":"Collections","title":"vector grandit dynamiquement","kicker":"Tableau moderne","prompt":"Une taille flexible, sans jongler avec new[] comme en 1998.","explain":"std::vector stocke des éléments contigus et ajuste automatiquement sa capacité lorsque tu ajoutes des valeurs.","points":["push_back ajoute à la fin.","size donne le nombre d'éléments.","Utilise une boucle range-based pour parcourir."],"code":"std::vector<int> nums{1,2,3};\nnums.push_back(4);"},{"id":"cpp-class","group":"Code","theme":"code","icon":"⚙️","topic":"C++","level":"Objets","title":"Une classe rassemble état et comportement","kicker":"POO","prompt":"Des données et les fonctions qui les protègent. Civilisé, enfin.","explain":"Une classe définit un nouveau type avec des attributs et des méthodes. Le constructeur initialise l'objet dès sa création.","points":["private protège l'état interne.","public expose l'interface utile.","Le constructeur porte le nom de la classe."],"code":"class Led {\n public: Led(int pin): pin_(pin) {}\n private: int pin_;\n};"},{"id":"cpp-raii","group":"Code","theme":"code","icon":"⚙️","topic":"C++","level":"Avancé","title":"RAII libère les ressources automatiquement","kicker":"Mémoire sûre","prompt":"Laisser les objets nettoyer derrière eux : une idée révolutionnaire pour certains développeurs.","explain":"RAII lie la durée de vie d'une ressource à celle d'un objet. Le destructeur libère automatiquement mémoire, fichier ou verrou.","points":["Préférer unique_ptr à new/delete.","La destruction est déterministe.","Réduit fortement les fuites de ressources."],"code":"auto sensor = std::make_unique<Sensor>();"},{"id":"python-functions","group":"Code","theme":"code","icon":"🐍","topic":"Python","level":"Fonctions","title":"Une fonction doit faire une chose claire","kicker":"Réutilisabilité","prompt":"Si son nom contient « etPuisEtAussi », elle a probablement besoin d'une thérapie.","explain":"Une fonction reçoit des paramètres, effectue une tâche précise et renvoie éventuellement une valeur.","points":["Utilise return pour produire un résultat.","Les paramètres nommés améliorent la lisibilité.","Évite les effets de bord inutiles."],"code":"def voltage(r, i):\n    return r * i"},{"id":"python-exceptions","group":"Code","theme":"code","icon":"🐍","topic":"Python","level":"Robustesse","title":"Les exceptions décrivent un échec","kicker":"Erreurs contrôlées","prompt":"Faire planter silencieusement reste une stratégie étonnamment populaire. Ne la rejoins pas.","explain":"try/except permet d'intercepter une erreur attendue et de proposer une réaction adaptée.","points":["Capture une exception précise.","else s'exécute sans erreur.","finally s'exécute toujours."],"code":"try:\n    value = int(text)\nexcept ValueError:\n    value = 0"},{"id":"python-generator","group":"Code","theme":"code","icon":"🐍","topic":"Python","level":"Intermédiaire","title":"yield produit les valeurs une par une","kicker":"Générateurs","prompt":"Pourquoi charger un million d'éléments si tu n'en lis que trois ? Exactement.","explain":"Un générateur calcule les valeurs à la demande au lieu de construire toute la collection en mémoire.","points":["yield suspend la fonction.","L'état local est conservé.","Idéal pour de grands flux de données."],"code":"def countdown(n):\n    while n:\n        yield n\n        n -= 1"},{"id":"js-closure","group":"Web","theme":"web","icon":"JS","topic":"JavaScript","level":"Intermédiaire","title":"Une closure se souvient de son contexte","kicker":"Portée lexicale","prompt":"La fonction quitte la pièce, mais garde les clés. Pratique.","explain":"Une closure permet à une fonction interne d'accéder aux variables de sa fonction externe même après la fin de celle-ci.","points":["Utile pour encapsuler un état.","Créée selon l'endroit où la fonction est définie.","Attention aux closures dans les boucles."],"code":"function counter(){\n let n=0;\n return () => ++n;\n}"},{"id":"js-eventloop","group":"Web","theme":"web","icon":"JS","topic":"JavaScript","level":"Asynchrone","title":"L'event loop orchestre les tâches","kicker":"Pile et file","prompt":"JavaScript n'est pas magique. Il est juste très bien entouré.","explain":"Le moteur exécute la pile d'appels, puis l'event loop récupère les callbacks prêts dans les files de tâches.","points":["Le code synchrone passe d'abord.","Les microtasks de Promise ont priorité.","Une grosse boucle bloque l'interface."],"code":"console.log('A');\nqueueMicrotask(()=>console.log('B'));\nconsole.log('C');"},{"id":"js-reduce","group":"Web","theme":"web","icon":"JS","topic":"JavaScript","level":"Tableaux","title":"reduce transforme une liste en une valeur","kicker":"Accumulation","prompt":"Somme, objet, groupe : un seul outil, donc évidemment à ne pas utiliser pour absolument tout.","explain":"reduce parcourt un tableau en mettant à jour un accumulateur à chaque élément.","points":["Donne une valeur initiale.","L'accumulateur peut être un nombre, tableau ou objet.","Garde le callback lisible."],"code":"const total = prices.reduce((sum,p)=>sum+p, 0);"},{"id":"html-validation","group":"Web","theme":"web","icon":"&lt;&gt;","topic":"HTML","level":"Formulaires","title":"Le navigateur sait déjà valider","kicker":"required et pattern","prompt":"Avant d'écrire 80 lignes de JavaScript, laisse HTML faire son travail.","explain":"Les attributs required, min, max, type et pattern apportent une validation native immédiate.","points":["required rend le champ obligatoire.","minlength contrôle la longueur.","La validation serveur reste indispensable."],"code":"<input type=\"number\" min=\"0\" max=\"100\" required>"},{"id":"html-landmarks","group":"Web","theme":"web","icon":"&lt;&gt;","topic":"HTML","level":"Accessibilité","title":"Les landmarks guident la navigation","kicker":"Structure sémantique","prompt":"Un lecteur d'écran apprécie davantage main que div-numéro-47.","explain":"header, nav, main, aside et footer donnent des repères structuraux aux technologies d'assistance.","points":["Un seul main visible par page.","nav contient une navigation importante.","Les titres doivent suivre une hiérarchie cohérente."],"code":"<main><article>...</article></main>"},{"id":"html-picture","group":"Web","theme":"web","icon":"&lt;&gt;","topic":"HTML","level":"Images","title":"picture adapte l'image au contexte","kicker":"Responsive images","prompt":"Envoyer une photo 4K à un téléphone reste techniquement possible. Intelligent, moins.","explain":"picture et srcset permettent au navigateur de choisir une image adaptée à la taille et au format supporté.","points":["source définit une variante.","srcset propose plusieurs résolutions.","alt reste obligatoire pour l'information utile."],"code":"<img srcset=\"small.jpg 480w, large.jpg 1200w\" alt=\"Circuit\">"},{"id":"css-cascade","group":"Web","theme":"web","icon":"#","topic":"CSS","level":"Fondations","title":"La cascade décide quelle règle gagne","kicker":"Spécificité","prompt":"Non, ajouter encore un !important n'est pas une architecture.","explain":"Le navigateur compare origine, importance, spécificité puis ordre d'apparition pour choisir une déclaration CSS.","points":["Un id est plus spécifique qu'une classe.","À spécificité égale, la dernière règle gagne.","Préférer des sélecteurs simples."],"code":".card.active { border-color: gold; }"},{"id":"css-position","group":"Web","theme":"web","icon":"#","topic":"CSS","level":"Layout","title":"position change le référentiel","kicker":"Flux et ancrage","prompt":"absolute sans parent positionné : la promenade imprévue commence.","explain":"relative crée un référentiel, absolute retire l'élément du flux et fixed l'ancre à la fenêtre.","points":["sticky colle après un seuil.","absolute cherche le premier ancêtre positionné.","z-index dépend du contexte d'empilement."],"code":".parent{position:relative}\n.badge{position:absolute;top:8px;right:8px}"},{"id":"css-animation","group":"Web","theme":"web","icon":"#","topic":"CSS","level":"Animation","title":"Une animation doit servir l'interface","kicker":"Mouvement utile","prompt":"Faire tourner chaque bouton ne le rend pas plus intelligent. Hélas.","explain":"@keyframes décrit les étapes d'une animation. Transform et opacity sont généralement les propriétés les plus fluides.","points":["Respecte prefers-reduced-motion.","Anime transform plutôt que top/left.","Garde une durée courte pour les retours d'action."],"code":"@keyframes pop{from{transform:scale(.8)}to{transform:scale(1)}}"},{"id":"react-effect","group":"Web","theme":"web","icon":"⚛","topic":"React","level":"Hooks","title":"useEffect synchronise avec l'extérieur","kicker":"Effets secondaires","prompt":"Il ne sert pas à mettre toute ta logique dedans. Respire.","explain":"useEffect est destiné aux interactions avec un système externe : réseau, timer, événement ou API navigateur.","points":["Le tableau de dépendances contrôle les relances.","Retourne une fonction de nettoyage.","Évite un effet pour une valeur calculable pendant le rendu."],"code":"useEffect(()=>{\n const id=setInterval(tick,1000);\n return()=>clearInterval(id);\n},[]);"},{"id":"react-controlled","group":"Web","theme":"web","icon":"⚛","topic":"React","level":"Formulaires","title":"Un champ contrôlé suit l'état React","kicker":"value + onChange","prompt":"Une seule source de vérité, même pour un pauvre input.","explain":"Dans un champ contrôlé, la valeur affichée vient de l'état et chaque saisie déclenche sa mise à jour.","points":["value reflète l'état.","onChange met à jour l'état.","Pratique pour validation et formatage."],"code":"<input value={name} onChange={e=>setName(e.target.value)} />"},{"id":"react-keys","group":"Web","theme":"web","icon":"⚛","topic":"React","level":"Listes","title":"Une key stable identifie chaque élément","kicker":"Réconciliation","prompt":"L'index comme key fonctionne jusqu'au jour où la liste bouge. Puis le cirque commence.","explain":"React utilise key pour reconnaître un élément entre deux rendus et préserver correctement son état.","points":["Utilise un id stable.","La key doit être unique parmi les frères.","Évite Math.random à chaque rendu."],"code":"items.map(item => <Card key={item.id} item={item} />)"},{"id":"vite-alias","group":"Web","theme":"web","icon":"⚡","topic":"Vite","level":"Configuration","title":"Les alias raccourcissent les imports","kicker":"Chemins propres","prompt":"../../../components est un appel à l'aide, pas un import.","explain":"Un alias associe un préfixe à un dossier pour rendre les imports plus lisibles et résistants aux déplacements.","points":["Configure resolve.alias.","Aligne aussi tsconfig si TypeScript.","Utilise un préfixe clair comme @/."],"code":"resolve:{ alias:{ '@':'/src' } }"},{"id":"vite-hmr","group":"Web","theme":"web","icon":"⚡","topic":"Vite","level":"Développement","title":"HMR remplace un module sans tout recharger","kicker":"Boucle rapide","prompt":"Modifier, voir, corriger. Le luxe moderne auquel on s'habitue trop vite.","explain":"Hot Module Replacement injecte les changements dans l'application en conservant autant que possible l'état courant.","points":["Accélère fortement le feedback.","Fonctionne très bien avec React.","Un rechargement complet reste parfois nécessaire."],"code":"if (import.meta.hot) import.meta.hot.accept();"},{"id":"vite-build","group":"Web","theme":"web","icon":"⚡","topic":"Vite","level":"Production","title":"Le build optimise les ressources","kicker":"dist","prompt":"Le serveur de développement n'est pas un hébergement de production. Oui, il faut le préciser.","explain":"npm run build transforme les modules en fichiers optimisés, minifiés et prêts à être servis depuis dist.","points":["Teste avec npm run preview.","Les assets reçoivent souvent un hash.","Configure base pour un sous-dossier."],"code":"npm run build && npm run preview"},{"id":"redux-selector","group":"Web","theme":"web","icon":"↻","topic":"Redux","level":"Lecture","title":"Un selector extrait une vue de l'état","kicker":"Données dérivées","prompt":"Les composants n'ont pas besoin de fouiller tout le magasin comme des touristes.","explain":"Un selector centralise la lecture et le calcul de données à partir du store.","points":["Réutilisable dans plusieurs composants.","Peut calculer une donnée dérivée.","Reselect permet la mémoïsation."],"code":"const selectDone = state => state.lessons.filter(x=>x.done);"},{"id":"redux-thunk","group":"Web","theme":"web","icon":"↻","topic":"Redux","level":"Async","title":"createAsyncThunk structure les requêtes","kicker":"pending / fulfilled / rejected","prompt":"Trois états, donc trois cas gérés. Étonnant comme cela évite les écrans éternellement chargés.","explain":"createAsyncThunk génère les actions liées au cycle d'une opération asynchrone.","points":["pending démarre le chargement.","fulfilled reçoit la donnée.","rejected traite l'erreur."],"code":"export const loadLessons=createAsyncThunk('lessons/load', async()=>fetch('/api').then(r=>r.json()));"},{"id":"redux-normalize","group":"Web","theme":"web","icon":"↻","topic":"Redux","level":"Architecture","title":"Normaliser évite les données dupliquées","kicker":"entities + ids","prompt":"Copier le même objet à cinq endroits garantit seulement cinq bugs synchronisés.","explain":"Un état normalisé stocke chaque entité une seule fois par id et référence les relations séparément.","points":["Accès rapide par id.","Mises à jour cohérentes.","createEntityAdapter aide à gérer ce format."],"code":"{ ids:['a'], entities:{ a:{id:'a',title:'Cours'} } }"},{"id":"ts-generics","group":"Web","theme":"web","icon":"TS","topic":"TypeScript","level":"Génériques","title":"Un générique conserve le type reçu","kicker":"Réutilisation typée","prompt":"Une fonction flexible sans renoncer à toute dignité typographique.","explain":"Les génériques décrivent une relation entre types sans fixer un type concret à l'avance.","points":["T représente un type fourni ou inféré.","Le résultat peut conserver exactement T.","Ajoute extends pour poser une contrainte."],"code":"function first<T>(items:T[]):T|undefined { return items[0]; }"},{"id":"ts-narrowing","group":"Web","theme":"web","icon":"TS","topic":"TypeScript","level":"Sécurité","title":"Le narrowing précise un type","kicker":"typeof et in","prompt":"Le compilateur devient utile dès qu'on lui donne des preuves. Comme tout bon analyste.","explain":"Une condition comme typeof réduit un type union dans le bloc où la condition est vraie.","points":["typeof pour les primitives.","in pour tester une propriété.","Un discriminant simplifie les unions d'objets."],"code":"if (typeof value === 'string') value.toUpperCase();"},{"id":"ts-utility","group":"Web","theme":"web","icon":"TS","topic":"TypeScript","level":"Types","title":"Les utility types transforment un type","kicker":"Partial, Pick, Omit","prompt":"Réécrire la même interface trois fois serait trop simple, donc parfaitement humain.","explain":"Partial, Pick, Omit et Record permettent de dériver de nouveaux types à partir d'un type existant.","points":["Partial rend les propriétés optionnelles.","Pick garde certaines clés.","Omit retire certaines clés."],"code":"type UserPatch = Partial<User>;"},{"id":"async-all","group":"Web","theme":"web","icon":"⏳","topic":"Async","level":"Promesses","title":"Promise.all lance en parallèle","kicker":"Temps gagné","prompt":"Attendre trois requêtes l'une après l'autre est une forme subtile d'auto-sabotage.","explain":"Promise.all attend plusieurs promesses lancées ensemble et renvoie leurs résultats dans le même ordre.","points":["Parfait pour des tâches indépendantes.","Rejette dès qu'une promesse rejette.","allSettled conserve tous les résultats."],"code":"const [user,posts]=await Promise.all([getUser(),getPosts()]);"},{"id":"async-abort","group":"Web","theme":"web","icon":"⏳","topic":"Async","level":"Réseau","title":"AbortController annule une requête","kicker":"Contrôle","prompt":"Une recherche précédente n'a pas à revenir écraser la nouvelle. Un minimum de discipline temporelle.","explain":"AbortController fournit un signal transmis à fetch pour interrompre une requête devenue inutile.","points":["Passe signal à fetch.","Appelle controller.abort().","Traite AbortError séparément."],"code":"const c=new AbortController();\nfetch(url,{signal:c.signal});\nc.abort();"},{"id":"async-debounce","group":"Web","theme":"web","icon":"⏳","topic":"Async","level":"UX","title":"Debounce attend la fin d'une rafale","kicker":"Recherche fluide","prompt":"Une requête par touche : excellent moyen de tester la patience du serveur.","explain":"Le debounce retarde une action et annule le délai précédent tant que de nouveaux événements arrivent.","points":["Utile pour recherche et resize.","Réduit les appels réseau.","Choisis un délai perceptible mais court."],"code":"clearTimeout(timer);\ntimer=setTimeout(search,300);"},{"id":"api-auth","group":"Systèmes","theme":"systems","icon":"⇄","topic":"API","level":"Sécurité","title":"Un token prouve l'authentification","kicker":"Authorization","prompt":"Le serveur ne doit pas croire le client sur parole. Même quand le client est charmant.","explain":"Le client envoie souvent un jeton dans l'en-tête Authorization pour que le serveur vérifie l'identité et les droits.","points":["Utilise HTTPS.","Ne place pas un secret dans le frontend.","Le serveur vérifie permissions et expiration."],"code":"Authorization: Bearer <token>"},{"id":"api-pagination","group":"Systèmes","theme":"systems","icon":"⇄","topic":"API","level":"Performance","title":"La pagination évite de tout envoyer","kicker":"limit et cursor","prompt":"Télécharger 40 000 cartes pour en afficher 10 : puissance brute, finesse inexistante.","explain":"Une API paginée renvoie une portion des résultats et les informations nécessaires pour demander la suite.","points":["limit contrôle la taille.","Cursor résiste mieux aux insertions que page/offset.","Retourne hasNext ou nextCursor."],"code":"GET /lessons?limit=20&cursor=abc"},{"id":"api-rate","group":"Systèmes","theme":"systems","icon":"⇄","topic":"API","level":"Fiabilité","title":"Le rate limit protège le service","kicker":"429 Too Many Requests","prompt":"Même une API mérite qu'on lui laisse reprendre son souffle.","explain":"La limitation de débit bloque ou ralentit un client qui envoie trop de requêtes dans une période donnée.","points":["429 signale la limite atteinte.","Retry-After peut indiquer l'attente.","Le client doit appliquer un backoff."],"code":"if(res.status===429) await wait(delay);"},{"id":"devops-branch","group":"Systèmes","theme":"systems","icon":"∞","topic":"DevOps","level":"Git","title":"Une branche isole un changement","kicker":"Workflow","prompt":"Coder directement sur main est une façon très efficace de rendre chaque vendredi mémorable.","explain":"Une branche permet de développer et tester une fonctionnalité sans modifier immédiatement la version stable.","points":["Une branche par sujet clair.","Commits petits et descriptifs.","Fusion après revue et tests."],"code":"git switch -c feature/feed-topics"},{"id":"devops-ci","group":"Systèmes","theme":"systems","icon":"∞","topic":"DevOps","level":"CI","title":"La CI vérifie chaque changement","kicker":"Tests automatiques","prompt":"Le test manuel « j'ai cliqué vite fait » n'est pas un pipeline.","explain":"Une intégration continue lance automatiquement lint, tests et build lorsqu'un changement est envoyé.","points":["Échoue tôt avant le déploiement.","Même procédure pour toute l'équipe.","Les secrets restent dans le système CI."],"code":"on: [push]\nsteps: [checkout, install, test, build]"},{"id":"devops-monitor","group":"Systèmes","theme":"systems","icon":"∞","topic":"DevOps","level":"Production","title":"Logs et métriques racontent la production","kicker":"Observabilité","prompt":"Sans monitoring, tout va bien jusqu'au moment précis où le client écrit en majuscules.","explain":"L'observabilité combine logs, métriques et traces pour comprendre l'état et les erreurs d'un système réel.","points":["Logue le contexte utile, pas les secrets.","Surveille latence et taux d'erreur.","Crée des alertes actionnables."],"code":"logger.error('fetch_failed',{status,requestId});"},{"id":"circuit-parallel","group":"Sciences","theme":"electric","icon":"⚡","topic":"Circuit électrique","level":"Électricité","title":"En parallèle, la tension est identique","kicker":"Plusieurs chemins","prompt":"Le courant se partage. La tension, elle, reste remarquablement constante.","explain":"Dans des branches en parallèle, chaque branche reçoit la même tension tandis que le courant total est la somme des courants de branche.","points":["U1 = U2 = Ugénérateur.","Itotal = I1 + I2.","La résistance équivalente diminue."],"code":"1 / R_eq = 1/R1 + 1/R2"},{"id":"circuit-kirchhoff","group":"Sciences","theme":"electric","icon":"⚡","topic":"Circuit électrique","level":"Analyse","title":"Kirchhoff conserve courant et énergie","kicker":"Nœuds et mailles","prompt":"Les électrons n'apparaissent pas spontanément au carrefour. C'est rassurant.","explain":"La loi des nœuds impose que les courants entrants égalent les courants sortants. La loi des mailles impose que la somme des tensions d'une boucle soit nulle.","points":["ΣI entrant = ΣI sortant.","ΣU dans une maille = 0.","Choisis des sens arbitraires puis respecte les signes."],"code":"I1 = I2 + I3"},{"id":"circuit-capacitor","group":"Sciences","theme":"electric","icon":"⚡","topic":"Circuit électrique","level":"Composants","title":"Un condensateur stocke de la charge","kicker":"C = Q / U","prompt":"Une petite réserve d'énergie, pas une batterie miniature. Nuance précieuse.","explain":"Un condensateur accumule des charges opposées sur deux armatures et s'oppose aux variations rapides de tension.","points":["Capacité en farads.","En continu, il se charge puis bloque le courant idéalement.","Utilisé pour filtrage et temporisation."],"code":"tau = R * C"},{"id":"physics-energy","group":"Sciences","theme":"science","icon":"↗","topic":"Physique","level":"Énergie","title":"L'énergie change de forme","kicker":"Conservation","prompt":"Elle ne disparaît pas. Elle devient parfois chaleur, ce cimetière discret de l'efficacité.","explain":"Dans un système isolé, l'énergie totale se conserve même lorsqu'elle passe de potentielle à cinétique ou thermique.","points":["Ec = 1/2 mv².","Ep = mgh près du sol.","Les frottements convertissent en énergie thermique."],"code":"E_total = E_c + E_p"},{"id":"physics-waves","group":"Sciences","theme":"science","icon":"↗","topic":"Physique","level":"Ondes","title":"v = f × λ","kicker":"Fréquence et longueur d'onde","prompt":"Quand la fréquence augmente à vitesse constante, la longueur d'onde se resserre. L'univers sait diviser.","explain":"La vitesse d'une onde est le produit de sa fréquence par sa longueur d'onde.","points":["f en hertz.","λ en mètres.","La fréquence est fixée par la source."],"code":"v = f * lambda"},{"id":"physics-power","group":"Sciences","theme":"science","icon":"↗","topic":"Physique","level":"Puissance","title":"La puissance mesure la vitesse du transfert d'énergie","kicker":"P = E / t","prompt":"Faire beaucoup n'est pas pareil que le faire vite. Toute la différence entre énergie et puissance.","explain":"La puissance indique combien d'énergie est transférée ou transformée par unité de temps.","points":["Unité : watt = joule/seconde.","En électricité : P = U × I.","Une grande puissance consomme l'énergie plus vite."],"code":"P = U * I"},{"id":"chemistry-mole","group":"Sciences","theme":"science","icon":"🧪","topic":"Chimie","level":"Quantités","title":"La mole compte les particules","kicker":"6,022 × 10²³","prompt":"Parce que compter les atomes un par un aurait légèrement ralenti le laboratoire.","explain":"Une mole contient le nombre d'Avogadro d'entités. Elle relie le monde microscopique aux masses mesurables.","points":["n = m / M.","m en grammes, M en g/mol.","Les coefficients d'équation donnent des rapports molaires."],"code":"n = m / M"},{"id":"chemistry-redox","group":"Sciences","theme":"science","icon":"🧪","topic":"Chimie","level":"Réactions","title":"Oxydation et réduction échangent des électrons","kicker":"Redox","prompt":"L'un perd, l'autre gagne. La chimie a donc inventé la comptabilité.","explain":"Une oxydation correspond à une perte d'électrons et une réduction à un gain d'électrons.","points":["Oxydant capte les électrons.","Réducteur cède les électrons.","Les deux demi-réactions sont couplées."],"code":"Zn -> Zn²+ + 2e-"},{"id":"chemistry-balance","group":"Sciences","theme":"science","icon":"🧪","topic":"Chimie","level":"Équations","title":"Une équation conserve chaque atome","kicker":"Équilibrage","prompt":"On ajuste les coefficients, jamais les indices. Sinon tu changes carrément la substance, détail gênant.","explain":"Équilibrer une équation consiste à choisir des coefficients pour avoir le même nombre de chaque type d'atome des deux côtés.","points":["Ne modifie pas les formules chimiques.","Commence par les espèces complexes.","Vérifie ensuite les charges si nécessaire."],"code":"2 H2 + O2 -> 2 H2O"}];
+
+function extraFeedVisual(p) {
+  const code = String(p.code || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return `<div style="width:92%;display:grid;gap:16px;text-align:left"><div style="font-size:3.7em;text-align:center;filter:drop-shadow(0 12px 20px rgba(0,0,0,.28))">${p.icon}</div><div class="feed-mini-code">${code}</div></div>`;
+}
+EXTRA_FEED_POSTS.forEach(p => FEED_POSTS.push({...p, visual: extraFeedVisual(p)}));
+
+/* =====================================================
+   DATA — FONCTIONNALITÉS PROTOTYPE
+===================================================== */
+const PROTOS = [
+  { id: 1, name: "LUMEN v1 — Prototype téléphone / ordinateur", desc: "L'app caméra qui prouve le concept. Objectif : utilisable en vrai par vous-même, tous les jours." },
+  { id: 2, name: "LUMEN v2 — Casque RA (téléphone monté ou casque passthrough)", desc: "Mains libres. Les mêmes fonctions, portées devant les yeux." },
+  { id: 3, name: "LUMEN v3 — Lunettes dédiées (matériel personnalisé)", desc: "Caméra, écran, capteurs, batterie, calcul embarqué. Le produit final." }
+];
+const FEATURES = [
+  { id:"f01", proto:1, name:"Zoom numérique fluide (pincement + boutons)", mod:"m102", xp:40 },
+  { id:"f02", proto:1, name:"Sélection d'un objet/zone à agrandir (tap)", mod:"m203", xp:50 },
+  { id:"f03", proto:1, name:"Suivi automatique de l'objet sélectionné", mod:"m203", xp:60 },
+  { id:"f04", proto:1, name:"Stabilisation de l'image pendant le zoom", mod:"m203", xp:60 },
+  { id:"f05", proto:1, name:"Amélioration contraste & netteté (CLAHE)", mod:"m201", xp:50 },
+  { id:"f06", proto:1, name:"Réduction d'éblouissement + luminosité auto", mod:"m201", xp:50 },
+  { id:"f07", proto:1, name:"Filtres visuels personnalisables (profils)", mod:"m201", xp:40 },
+  { id:"f08", proto:1, name:"OCR : lecture de tableaux, panneaux, étiquettes", mod:"m301", xp:60 },
+  { id:"f09", proto:1, name:"Détection & agrandissement du numéro/destination de bus", mod:"m401", xp:60 },
+  { id:"f10", proto:1, name:"Lecture vocale des textes détectés", mod:"m302", xp:40 },
+  { id:"f11", proto:1, name:"Commandes vocales ('Zoome sur le tableau', 'Où est la sortie ?')", mod:"m302", xp:50 },
+  { id:"f12", proto:1, name:"Reconnaissance d'objets + annonce du nom", mod:"m401", xp:50 },
+  { id:"f13", proto:1, name:"Détection des portes", mod:"m402", xp:50 },
+  { id:"f14", proto:1, name:"Reconnaissance panneaux 'Sortie / Exit / יציאה' (texte + symbole)", mod:"m402", xp:60 },
+  { id:"f15", proto:1, name:"Distinction porte ordinaire / issue de secours", mod:"m402", xp:60 },
+  { id:"f16", proto:1, name:"Mise en évidence visuelle (contour, flèche, zone lumineuse)", mod:"m402", xp:40 },
+  { id:"f17", proto:1, name:"Guidage vers la sortie (voix + direction + distance approx.)", mod:"m402", xp:70 },
+  { id:"f18", proto:1, name:"Signalement des obstacles sur le chemin", mod:"m401", xp:60 },
+  { id:"f19", proto:1, name:"Visages enregistrés : reconnaissance + affichage du prénom", mod:"m403", xp:70 },
+  { id:"f20", proto:1, name:"Annonce vocale ('Sarah est devant toi') + position", mod:"m403", xp:50 },
+  { id:"f21", proto:1, name:"Stockage local chiffré des données biométriques", mod:"m701", xp:60 },
+  { id:"f22", proto:2, name:"Portage de l'interface en mode mains libres", mod:"m501", xp:80 },
+  { id:"f23", proto:2, name:"Affichage RA superposé (étiquettes ancrées)", mod:"m502", xp:90 },
+  { id:"f24", proto:2, name:"Navigation complète à la voix", mod:"m302", xp:70 },
+  { id:"f25", proto:3, name:"Prototype matériel : caméra + écran + Pi/Jetson", mod:"m601", xp:120 },
+  { id:"f26", proto:3, name:"Modèles IA optimisés embarqués (10+ FPS)", mod:"m602", xp:120 },
+  { id:"f27", proto:3, name:"Autonomie batterie 4 h+ et gestion thermique", mod:"m602", xp:100 },
+  { id:"f28", proto:3, name:"Tests utilisateurs formels + rapport", mod:"m702", xp:100 }
+];
+
+/* =====================================================
+   DATA — INVESTISSEURS & FINANCEMENT
+   verified: true = confirmé par sources ; sinon à vérifier
+===================================================== */
+const INVESTORS = [
+  { id:"i01", name:"A3i (Beit Issie Shapiro × PresenTense)", type:"Accélérateur", cls:"accel",
+    desc:"Accélérateur israélien dédié aux technologies d'assistance ('ability tech'), cofondé par Beit Issie Shapiro et PresenTense. Programme d'environ 9 mois accompagnant des startups qui améliorent la vie des personnes en situation de handicap.",
+    why:"Le match le plus évident : assistive tech, Israël, accompagnement dès le stade projet. Cible n°1.",
+    url:"https://www.beitissie.org.il/en/", verified:true },
+  { id:"i02", name:"Autorité israélienne de l'innovation — programme Tnufa", type:"Subvention", cls:"grant",
+    desc:"Agence publique israélienne de soutien à l'innovation. Le programme Tnufa finance les entrepreneurs en phase pré-amorçage (prototype, PoC, propriété intellectuelle) sans prise de participation.",
+    why:"Argent non-dilutif pour construire le prototype. Dossier exigeant, mais vous vivez de dossiers exigeants.",
+    url:"https://innovationisrael.org.il/en/", verified:true },
+  { id:"i03", name:"OurCrowd / Global Health Equity Fund", type:"Fonds", cls:"fund",
+    desc:"Plateforme d'investissement israélienne au portefeuille fourni en technologies d'assistance, associée à la WHO Foundation dans un fonds de 200 M$ visant les technologies de santé, y compris les technologies du handicap, notamment pour les pays à revenu faible et intermédiaire.",
+    why:"L'albinisme est un enjeu majeur en Afrique subsaharienne — l'angle santé mondiale de LUMEN colle à leur thèse.",
+    url:"https://www.ourcrowd.com", verified:true },
+  { id:"i04", name:"Tikkun Olam Makers (TOM)", type:"Communauté", cls:"assoc",
+    desc:"Mouvement mondial né en Israël organisant des 'makeathons' où des équipes développent des solutions open source pour des personnes en situation de handicap ; a reçu le soutien du Google Impact Challenge: Disabilities.",
+    why:"Prototypage accéléré, visibilité, et rencontre directe avec des utilisateurs et des ingénieurs. Gratuit.",
+    url:"https://tomglobal.org", verified:true },
+  { id:"i05", name:"MassChallenge Israel", type:"Accélérateur", cls:"accel",
+    desc:"Accélérateur international sans prise de participation (equity-free), présent en Israël, ouvert aux startups à impact.",
+    why:"Equity-free : vous gardez 100 % du projet. Idéal en phase précoce. À vérifier : cohortes ouvertes.",
+    url:"https://masschallenge.org", verified:false },
+  { id:"i06", name:"Google.org — appels à projets accessibilité", type:"Concours", cls:"grant",
+    desc:"Google.org a financé des initiatives handicap (Impact Challenge: Disabilities) et soutient régulièrement des projets d'accessibilité par subventions et programmes.",
+    why:"Un prototype Android + MediaPipe + accessibilité parle leur langue. Surveiller les appels ouverts.",
+    url:"https://www.google.org", verified:true },
+  { id:"i07", name:"Horizon Europe / EIC (Union européenne)", type:"Subvention", cls:"grant",
+    desc:"Programmes de financement européens pour la recherche et l'innovation, incluant santé et inclusion. Accessibles selon montage (partenariats, statut).",
+    why:"Pertinent via l'angle France/Genespoir ou un partenariat académique. Lourd administrativement — pour plus tard.",
+    url:"https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/home", verified:false },
+  { id:"i08", name:"Genespoir (France)", type:"Association", cls:"assoc",
+    desc:"Association française des personnes atteintes d'albinisme : information, soutien, financement de recherche.",
+    why:"Partenaire d'usage idéal : accès aux utilisateurs francophones, crédibilité, lettres de soutien pour les dossiers de subvention.",
+    url:"https://www.genespoir.org", verified:true },
+  { id:"i09", name:"NOAH (National Organization for Albinism and Hypopigmentation)", type:"Association", cls:"assoc",
+    desc:"Organisation américaine de référence sur l'albinisme : communauté, conférences, ressources basse vision.",
+    why:"Porte d'entrée vers le marché américain et vers des partenaires de test anglophones.",
+    url:"https://www.albinism.org", verified:true },
+  { id:"i10", name:"Under the Same Sun", type:"Association", cls:"assoc",
+    desc:"ONG dédiée aux personnes atteintes d'albinisme, très active en Afrique de l'Est (Tanzanie), où les enjeux sont vitaux.",
+    why:"Si LUMEN vise un impact mondial à bas coût, c'est l'allié qui connaît le terrain le plus critique.",
+    url:"https://underthesamesun.com", verified:true },
+  { id:"i11", name:"Headstart / Kickstarter (crowdfunding)", type:"Crowdfunding", cls:"fund",
+    desc:"Plateformes de financement participatif — Headstart étant la plateforme israélienne de référence.",
+    why:"Votre communauté WhatsApp + droitsdesolims.com = une audience de lancement déjà constituée. Peu de fondateurs ont ça.",
+    url:"https://www.headstart.co.il", verified:false },
+  { id:"i12", name:"OrCam / Envision / Aira", type:"Benchmark", cls:"bench",
+    desc:"Leaders des aides visuelles par IA (lecture portée, lunettes intelligentes, assistance à distance). Pas des investisseurs : des concurrents, des employeurs potentiels — ou des acquéreurs.",
+    why:"À étudier ligne par ligne (module Phase 0). Leur existence prouve le marché ; votre niche (albinisme, personnalisation, français/hébreu) reste ouverte.",
+    url:"https://www.orcam.com", verified:true }
+];
+
+/* =====================================================
+   DATA — PARCOURS BUSINESS (onglet Business)
+===================================================== */
+const BIZ = [
+  { t:"Valider le problème", d:"Entretiens (module Phase 0), taille du marché, disposition à payer. Personne n'investit dans une solution en quête de problème.",
+    res:[["YC — How to Talk to Users","https://www.ycombinator.com/library/6g-how-to-talk-to-users"],["The Mom Test","https://www.momtestbook.com"]] },
+  { t:"Construire le MVP", d:"LUMEN v1 sur téléphone, utilisé par 5 personnes réelles chaque semaine. Un MVP utilisé vaut mille slides.",
+    res:[["YC Startup School","https://www.startupschool.org"]] },
+  { t:"Structurer le modèle économique", d:"B2C (familles), B2B2C (associations, écoles, assurances), subventions publiques. Chiffrer chaque canal.",
+    res:[["Steve Blank — Business Model Canvas (Udacity ep245)","https://www.udacity.com/course/how-to-build-a-startup--ep245"],["Strategyzer — Canvas","https://www.strategyzer.com/library/the-business-model-canvas"]] },
+  { t:"Pitch deck & one-pager", d:"10 slides : problème, solution, démo, marché, concurrence, modèle, roadmap, équipe, demande. Votre histoire personnelle est un atout narratif rare — utilisez-la.",
+    res:[["Guide Sequoia","https://www.sequoiacap.com/article/writing-a-business-plan/"],["MIT OCW 15.390","https://ocw.mit.edu/courses/15-390-new-enterprises-spring-2013/"]] },
+  { t:"Financement non-dilutif d'abord", d:"Tnufa, concours, crowdfunding communautaire. Garder l'équité tant que le produit n'est pas prouvé.",
+    res:[["Autorité de l'innovation","https://innovationisrael.org.il/en/"]] },
+  { t:"Accélérateurs & investisseurs", d:"A3i en tête de liste, puis MassChallenge, puis fonds à impact. Voir l'onglet Investisseurs et tenir le suivi des contacts à jour.",
+    res:[["Onglet Investisseurs →","#"]] }
+];
+
+/* =====================================================
+   DATA — BADGES
+===================================================== */
+const BADGES = [
+  { id:"b01", ico:"👓", t:"Premier regard", d:"Terminer un premier module", test: s => s.done.length >= 1 },
+  { id:"b02", ico:"🎧", t:"À l'écoute", d:"Terminer la Phase 0 complète", test: s => MODULES.filter(m=>m.phase===0).every(m=>s.done.includes(m.id)) },
+  { id:"b03", ico:"🐍", t:"Charmeuse de serpents", d:"Terminer CS50P (m101)", test: s => s.done.includes("m101") },
+  { id:"b04", ico:"🔍", t:"Œil de lynx", d:"Terminer la Phase 2 (vision par ordinateur)", test: s => MODULES.filter(m=>m.phase===2).every(m=>s.done.includes(m.id)) },
+  { id:"b05", ico:"🗣", t:"La machine qui parle", d:"OCR + synthèse vocale terminés", test: s => s.done.includes("m301") && s.done.includes("m302") },
+  { id:"b06", ico:"🚪", t:"Sortie de secours", d:"Cocher les 5 fonctionnalités portes/sorties (f13–f17)", test: s => ["f13","f14","f15","f16","f17"].every(f=>s.feats.includes(f)) },
+  { id:"b07", ico:"📱", t:"LUMEN v1", d:"Toutes les fonctionnalités du prototype 1", test: s => FEATURES.filter(f=>f.proto===1).every(f=>s.feats.includes(f.id)) },
+  { id:"b08", ico:"💼", t:"Fondatrice", d:"Terminer la Phase 8 (business)", test: s => MODULES.filter(m=>m.phase===8).every(m=>s.done.includes(m.id)) },
+  { id:"b09", ico:"🤝", t:"Premier contact", d:"Passer un investisseur en statut 'Contacté'", test: s => Object.values(s.inv).some(v => v.st && v.st !== "todo") },
+  { id:"b10", ico:"🔥", t:"Constance", d:"7 jours de suite", test: s => s.streak >= 7 },
+  { id:"b11", ico:"⚡", t:"5 000 XP", d:"Accumuler 5 000 XP", test: s => s.xp >= 5000 },
+  { id:"b12", ico:"🏆", t:"Vision accomplie", d:"Tous les modules terminés", test: s => s.done.length === MODULES.length }
+];
+
+const LEVELS_XP = [0, 300, 800, 1500, 2500, 4000, 6000];
+const LEVEL_NAMES = ["Curieuse", "Apprentie", "Développeuse", "Ingénieure vision", "Architecte RA", "Fondatrice", "Visionnaire"];
+
+/* =====================================================
+   ÉTAT
+===================================================== */
+let state = store.get() || { xp:0, done:[], feats:[], inv:{}, lab:[], streak:0, lastDay:null, badges:[], lowvision:false, feedKnown:[], feedSaved:[], feedLikes:[], feedTopic:"Mix", feedOrder:[], feedVersion:0 };
+state.feedKnown = state.feedKnown || []; state.feedSaved = state.feedSaved || []; state.feedLikes = state.feedLikes || []; state.feedTopic = state.feedTopic || "Mix"; state.feedOrder = Array.isArray(state.feedOrder) ? state.feedOrder : []; state.feedVersion = state.feedVersion || 0;
+function save() { store.set(state); }
+
+function updateStreak() {
+  const today = new Date().toDateString();
+  if (state.lastDay === today) return;
+  const y = new Date(); y.setDate(y.getDate()-1);
+  state.streak = (state.lastDay === y.toDateString()) ? state.streak + 1 : 1;
+  state.lastDay = today; save();
+}
+
+function userLevel() {
+  let lv = 0;
+  for (let i = 0; i < LEVELS_XP.length; i++) if (state.xp >= LEVELS_XP[i]) lv = i;
+  return lv;
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+function toggleLowVision() {
+  state.lowvision = !state.lowvision; save(); applyLowVision();
+}
+function applyLowVision() {
+  document.body.classList.toggle("lowvision", state.lowvision);
+  const b = document.getElementById("lv-toggle");
+  b.classList.toggle("on", state.lowvision);
+  b.setAttribute("aria-pressed", state.lowvision);
+}
+
+/* =====================================================
+   HEADER
+===================================================== */
+function renderHeader() {
+  const lv = userLevel();
+  document.getElementById("hd-level").textContent = "Niv. " + (lv+1) + " · " + LEVEL_NAMES[lv];
+  document.getElementById("hd-xp").textContent = state.xp;
+  const next = LEVELS_XP[lv+1] || LEVELS_XP[lv];
+  const prev = LEVELS_XP[lv];
+  const pct = next > prev ? Math.min(100, (state.xp - prev) / (next - prev) * 100) : 100;
+  document.getElementById("hd-xpfill").style.width = pct + "%";
+  document.getElementById("hd-streak").textContent = state.streak;
+}
+
+/* =====================================================
+   TABLEAU DE BORD
+===================================================== */
+function renderDashboard() {
+  const v = document.getElementById("view-dashboard");
+  const nextMod = MODULES.find(m => !state.done.includes(m.id));
+  const p1 = FEATURES.filter(f=>f.proto===1);
+  const p1done = p1.filter(f=>state.feats.includes(f.id)).length;
+  const contacted = Object.values(state.inv).filter(x=>x.st && x.st!=="todo").length;
+  v.innerHTML = `
+    <h2>Projet LUMEN</h2>
+    <p class="sub">Réalité augmentée pour les personnes atteintes d'albinisme — de l'app téléphone aux lunettes intelligentes.</p>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="num">${state.done.length}/${MODULES.length}</div><div class="lbl">Modules terminés</div></div>
+      <div class="stat-card"><div class="num">${p1done}/${p1.length}</div><div class="lbl">Fonctionnalités LUMEN v1</div></div>
+      <div class="stat-card"><div class="num">${contacted}</div><div class="lbl">Investisseurs contactés</div></div>
+      <div class="stat-card"><div class="num">${state.badges.length}/${BADGES.length}</div><div class="lbl">Succès débloqués</div></div>
+      <div class="stat-card"><div class="num">${state.feedKnown.length}/${FEED_POSTS.length}</div><div class="lbl">Cartes du feed maîtrisées</div></div>
+    </div>
+    ${nextMod ? `
+    <div class="card" style="border-color: var(--gold);">
+      <h3>▶ Prochain module recommandé</h3>
+      <div style="font-weight:700; margin:4px 0;">${nextMod.title}</div>
+      <div style="font-size:.88em; color:var(--muted); margin-bottom:10px;">${nextMod.desc}</div>
+      <button class="btn small" onclick="openModule('${nextMod.id}')">Ouvrir le module</button>
+    </div>` : `<div class="card" style="border-color: var(--green);"><h3>Parcours terminé.</h3><p style="font-size:.9em;">Il ne reste donc que le plus facile : changer la vie de quelques milliers de personnes.</p></div>`}
+    <div class="warn">LUMEN est un projet d'aide technique. Il ne remplace ni un traitement médical, ni un dispositif de sécurité certifié — et il sera conçu <em>avec</em> les personnes concernées, pas seulement pour elles.</div>
+  `;
+}
+
+/* =====================================================
+   PARCOURS
+===================================================== */
+function phaseUnlocked(pid) {
+  if (pid === 0) return true;
+  const prev = MODULES.filter(m => m.phase === pid - 1);
+  return prev.filter(m => state.done.includes(m.id)).length >= Math.ceil(prev.length / 2);
+}
+function renderRoadmap() {
+  const v = document.getElementById("view-roadmap");
+  let html = `<h2>Parcours d'apprentissage</h2>
+  <p class="sub">9 phases, ${MODULES.length} modules, ressources 100 % gratuites. Une phase se débloque quand la moitié de la précédente est terminée — la rigueur avant l'enthousiasme.</p>`;
+  PHASES.forEach(ph => {
+    const mods = MODULES.filter(m => m.phase === ph.id);
+    const done = mods.filter(m => state.done.includes(m.id)).length;
+    const unlocked = phaseUnlocked(ph.id);
+    html += `<div class="phase">
+      <div class="phase-head">
+        <span class="phase-dot" style="background:${ph.color}"></span>
+        <span class="phase-title">${ph.name}</span>
+        <span class="phase-prog">${done}/${mods.length}</span>
+        <span class="phase-desc">${ph.desc}</span>
+      </div>
+      <div class="grid">
+        ${mods.map(m => `
+          <div class="mod-card ${state.done.includes(m.id) ? "done" : ""} ${unlocked ? "" : "locked"}"
+               ${unlocked ? `onclick="openModule('${m.id}')" tabindex="0" onkeydown="if(event.key==='Enter')openModule('${m.id}')"` : ""}>
+            <div style="font-weight:700;">${m.title}</div>
+            <div style="font-size:.85em; color:var(--muted); margin-top:4px;">${m.desc}</div>
+            <div class="mod-meta"><span>⏱ ${m.time}</span><span><b>+${m.xp} XP</b></span><span>${m.res.length} ressources</span></div>
+          </div>`).join("")}
+      </div>
+    </div>`;
+  });
+  v.innerHTML = html;
+}
+
+function openModule(id) {
+  const m = MODULES.find(x => x.id === id);
+  const done = state.done.includes(id);
+  const modal = document.getElementById("modal");
+  modal.innerHTML = `
+    <h3>${m.title}</h3>
+    <div style="font-size:.85em; color:var(--muted);">⏱ ${m.time} · +${m.xp} XP</div>
+    <p style="margin-top:10px; font-size:.93em;">${m.desc}</p>
+    <div class="m-sec"><h4>Objectifs</h4><ul>${m.objectives.map(o=>`<li>${o}</li>`).join("")}</ul></div>
+    <div class="m-sec"><h4>Ressources gratuites</h4>
+      ${m.res.map(r=>`<div class="res-item"><span class="res-type">${r[1]}</span><a href="${r[2]}" target="_blank" rel="noopener">${r[0]}</a><span class="res-free">gratuit</span></div>`).join("")}
+    </div>
+    <div class="m-sec"><h4>Livrable</h4><div class="deliv">${m.deliverable}</div></div>
+    ${m.jarvis ? `<div class="m-sec"><h4>Note de J.A.R.V.I.S.</h4><div class="jarvis">${m.jarvis}</div></div>` : ""}
+    <div class="modal-actions">
+      ${done
+        ? `<button class="btn ghost" onclick="unmarkModule('${m.id}')">Marquer non terminé</button>`
+        : `<button class="btn" onclick="completeModule('${m.id}')">Module terminé (+${m.xp} XP)</button>`}
+      <button class="btn ghost" onclick="closeModal()">Fermer</button>
+    </div>`;
+  document.getElementById("modal-bg").classList.add("open");
+}
+function closeModal() { document.getElementById("modal-bg").classList.remove("open"); }
+function completeModule(id) {
+  if (state.done.includes(id)) return;
+  const m = MODULES.find(x => x.id === id);
+  state.done.push(id); state.xp += m.xp; save();
+  closeModal(); checkBadges(); renderAll();
+  toast(`Module terminé. +${m.xp} XP. Continuez, Madame.`);
+}
+function unmarkModule(id) {
+  const m = MODULES.find(x => x.id === id);
+  state.done = state.done.filter(x => x !== id); state.xp = Math.max(0, state.xp - m.xp); save();
+  closeModal(); renderAll();
+}
+
+/* =====================================================
+   FEED SCIENCES & CODE
+===================================================== */
+const FEED_VERSION = 3;
+function ensureFeedOrder() {
+  const ids = FEED_POSTS.map(p => p.id);
+  const invalid = state.feedVersion !== FEED_VERSION || state.feedOrder.length !== ids.length || ids.some(id => !state.feedOrder.includes(id));
+  if (invalid) {
+    state.feedOrder = ids.slice();
+    for (let i = state.feedOrder.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [state.feedOrder[i], state.feedOrder[j]] = [state.feedOrder[j], state.feedOrder[i]];
+    }
+    state.feedVersion = FEED_VERSION;
+    save();
+  }
+}
+function getVisibleFeedPosts() {
+  ensureFeedOrder();
+  let posts = FEED_POSTS.filter(p => {
+    if (state.feedTopic === "Mix") return true;
+    if (state.feedTopic === "Sauvegardés") return state.feedSaved.includes(p.id);
+    return p.topic === state.feedTopic;
+  });
+  const rank = new Map(state.feedOrder.map((id, i) => [id, i]));
+  return posts.sort((a, b) => (rank.get(a.id) ?? 9999) - (rank.get(b.id) ?? 9999));
+}
+function renderFeed() {
+  const v = document.getElementById("view-feed");
+  const topics = ["Mix", ...new Set(FEED_POSTS.map(p => p.topic)), "Sauvegardés"];
+  const posts = getVisibleFeedPosts();
+  const themeLabel = state.feedTopic === "Mix" ? "Mix de toutes les matières" : state.feedTopic;
+  v.innerHTML = `<div class="feed-wrap">
+    <div class="feed-hero">
+      <div><h2>Feed · Code &amp; Sciences</h2><p class="sub">Choisis une matière ou lance le Mix. Tap pour apprendre · double-tap pour maîtriser.</p></div>
+      <div class="feed-score"><b>${state.feedKnown.length}</b> maîtrisés · ${FEED_POSTS.length} cartes</div>
+    </div>
+    <div class="feed-picker">
+      <label><span>Thème</span><select onchange="setFeedTopic(this.value)" aria-label="Choisir le thème du feed">
+        ${topics.map(t => `<option value="${t}" ${state.feedTopic===t?"selected":""}>${t === "Mix" ? "🔀 Mix de tous les thèmes" : t === "Sauvegardés" ? "🔖 Cartes sauvegardées" : t}</option>`).join("")}
+      </select></label>
+      <button class="feed-shuffle" onclick="shuffleFeed()">🔀 Mélanger ${state.feedTopic === "Mix" ? "le feed" : themeLabel}</button>
+    </div>
+    <div class="feed-filters" aria-label="Raccourcis de thèmes">
+      ${["Mix","C++","Python","JavaScript","React","Circuit électrique","Physique","Chimie"].map(t=>`<button class="feed-chip ${state.feedTopic===t?"active":""}" onclick="setFeedTopic('${t}')">${t}</button>`).join("")}
+    </div>
+    <div class="feed-list" id="feed-list">
+      ${posts.length ? posts.map((p,i)=>feedPostHTML(p,i,posts.length)).join("") : `<div class="feed-empty"><div><div style="font-size:2.5em">🔖</div><b>Aucune carte ici</b><br>Choisis un autre thème ou sauvegarde quelques leçons.</div></div>`}
+    </div>
+  </div>`;
+}
+function setFeedTopic(topic) {
+  state.feedTopic = topic;
+  save();
+  renderFeed();
+}
+function shuffleFeed() {
+  ensureFeedOrder();
+  const visibleIds = getVisibleFeedPosts().map(p => p.id);
+  const shuffled = visibleIds.slice();
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  const visibleSet = new Set(visibleIds);
+  let k = 0;
+  state.feedOrder = state.feedOrder.map(id => visibleSet.has(id) ? shuffled[k++] : id);
+  save();
+  renderFeed();
+  toast(`Feed mélangé · ${visibleIds.length} cartes.`);
+}
+function feedPostHTML(p, index, total) {
+  const liked = state.feedLikes.includes(p.id), saved = state.feedSaved.includes(p.id), known = state.feedKnown.includes(p.id);
+  return `<article class="feed-post">
+    <div class="feed-card" id="feed-${p.id}" data-theme="${p.theme}" onclick="flipFeed('${p.id}')" ondblclick="masterFeed('${p.id}', event)">
+      <div class="feed-progress"><i></i></div><div class="feed-burst" id="burst-${p.id}">⚡</div>
+      <section class="feed-front">
+        <div class="feed-top"><div class="feed-avatar">${p.icon}</div><div><div class="feed-topic">${p.topic}</div><div class="feed-meta">LUMEN Academy · ${p.group}</div></div><span class="feed-level">${p.level}</span></div>
+        <div class="feed-visual">${p.visual}</div>
+        <div class="feed-caption"><div class="feed-kicker">${p.kicker}</div><div class="feed-title">${p.title}</div><div class="feed-prompt">${p.prompt}</div></div>
+        <div class="feed-actions">
+          <button class="feed-action ${liked?'on':''}" onclick="event.stopPropagation(); likeFeed('${p.id}')" aria-label="J'aime">${liked?'♥':'♡'}</button>
+          <button class="feed-action ${saved?'on':''}" onclick="event.stopPropagation(); saveFeed('${p.id}')" aria-label="Sauvegarder">${saved?'▮':'▯'}</button>
+          <button class="feed-action known ${known?'on':''}" onclick="event.stopPropagation(); masterFeed('${p.id}', event)" aria-label="Marquer maîtrisé">${known?'✓':'○'}</button>
+          <span class="feed-action-label">${known?'Maîtrisé':'À apprendre'}</span><span class="feed-swipe">Tap pour retourner ↑</span>
+        </div>
+      </section>
+      <section class="feed-back">
+        <div class="feed-top"><div class="feed-avatar">${p.icon}</div><div><div class="feed-topic">Explication · ${p.topic}</div><div class="feed-meta">retape pour revenir</div></div><span class="feed-level">${p.level}</span></div>
+        <h3>${p.title}</h3><div class="feed-explain">${p.explain}</div>
+        <div class="feed-points">${p.points.map(x=>`<div class="feed-point">◆ ${x}</div>`).join("")}</div>
+        <div style="margin-top:14px"><div class="feed-kicker" style="margin-bottom:7px">À retenir</div><div class="feed-code">${escapeFeedCode(p.code)}</div></div>
+        <div class="feed-actions" style="margin-top:auto;padding-top:14px">
+          <button class="feed-action known ${known?'on':''}" onclick="event.stopPropagation(); masterFeed('${p.id}', event)">${known?'✓':'○'}</button><span class="feed-action-label">${known?'Concept maîtrisé':'Marquer maîtrisé'}</span><span class="feed-swipe">Tap pour le visuel</span>
+        </div>
+      </section><span class="feed-counter">${index+1}/${total}</span>
+    </div>
+  </article>`;
+}
+function escapeFeedCode(code) { return code.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function flipFeed(id) { document.getElementById("feed-"+id)?.classList.toggle("flipped"); }
+function likeFeed(id) { state.feedLikes = state.feedLikes.includes(id) ? state.feedLikes.filter(x=>x!==id) : [...state.feedLikes,id]; save(); renderFeedKeep(id); }
+function saveFeed(id) { state.feedSaved = state.feedSaved.includes(id) ? state.feedSaved.filter(x=>x!==id) : [...state.feedSaved,id]; save(); renderFeedKeep(id); toast(state.feedSaved.includes(id) ? "Leçon sauvegardée." : "Leçon retirée des sauvegardes."); }
+function masterFeed(id, event) {
+  if (event) { event.stopPropagation(); event.preventDefault(); }
+  const adding = !state.feedKnown.includes(id);
+  state.feedKnown = adding ? [...state.feedKnown,id] : state.feedKnown.filter(x=>x!==id);
+  if (adding) state.xp += 15;
+  else state.xp = Math.max(0,state.xp-15);
+  save(); renderHeader(); renderFeedKeep(id);
+  if (adding) { const b=document.getElementById("burst-"+id); if(b){b.classList.remove("go"); void b.offsetWidth; b.classList.add("go");} }
+  toast(adding ? "Concept maîtrisé. +15 XP." : "Concept remis à réviser.");
+}
+function renderFeedKeep(id) {
+  const old=document.getElementById("feed-"+id); const top=old?.parentElement?.offsetTop || 0; const flipped=old?.classList.contains("flipped");
+  renderFeed(); const next=document.getElementById("feed-"+id); if(flipped) next?.classList.add("flipped"); const list=document.getElementById("feed-list"); if(list) list.scrollTop=top;
+}
+
+/* =====================================================
+   PROTOTYPE
+===================================================== */
+function renderProto() {
+  const v = document.getElementById("view-proto");
+  let html = `<h2>Feuille de route du prototype</h2>
+  <p class="sub">Chaque fonctionnalité est reliée au module qui l'enseigne. Cochez quand c'est démontré en vidéo — pas quand c'est "presque fini".</p>`;
+  PROTOS.forEach(p => {
+    const feats = FEATURES.filter(f => f.proto === p.id);
+    const done = feats.filter(f => state.feats.includes(f.id)).length;
+    html += `<div class="proto-block">
+      <h3>${p.name} <span style="font-size:.75em; color:var(--muted); font-weight:400;">— ${done}/${feats.length}</span></h3>
+      <p style="font-size:.85em; color:var(--muted); margin-bottom:10px;">${p.desc}</p>
+      ${feats.map(f => {
+        const mod = MODULES.find(m => m.id === f.mod);
+        const c = state.feats.includes(f.id);
+        return `<label class="feat ${c ? "done" : ""}">
+          <input type="checkbox" ${c ? "checked" : ""} onchange="toggleFeat('${f.id}', this.checked)">
+          <span><span class="fname">${f.name}</span><br><span class="fmeta">Module lié : ${mod ? mod.title : "-"}</span></span>
+          <span class="fxp">+${f.xp} XP</span>
+        </label>`;
+      }).join("")}
+    </div>`;
+  });
+  html += `<div class="warn">Fonction portes &amp; issues de secours : à présenter toujours comme une <b>aide complémentaire</b>, jamais comme un système de sécurité fiable en situation d'urgence.</div>`;
+  v.innerHTML = html;
+}
+function toggleFeat(id, on) {
+  const f = FEATURES.find(x => x.id === id);
+  if (on && !state.feats.includes(id)) { state.feats.push(id); state.xp += f.xp; toast(`Fonctionnalité validée. +${f.xp} XP.`); }
+  else if (!on) { state.feats = state.feats.filter(x => x !== id); state.xp = Math.max(0, state.xp - f.xp); }
+  save(); checkBadges(); renderHeader(); renderProto(); renderDashboard(); renderBadges();
+}
+
+/* =====================================================
+   BIBLIOTHÈQUE
+===================================================== */
+function renderLibrary() {
+  const v = document.getElementById("view-library");
+  const all = [];
+  MODULES.forEach(m => m.res.forEach(r => all.push({ n:r[0], t:r[1], u:r[2], ph:m.phase })));
+  const seen = new Set(); const uniq = all.filter(r => !seen.has(r.u) && seen.add(r.u));
+  let html = `<h2>Bibliothèque</h2><p class="sub">${uniq.length} ressources gratuites, regroupées par phase. Tout ce qu'il faut, rien à payer — l'excuse budgétaire est officiellement morte.</p>`;
+  PHASES.forEach(ph => {
+    const rs = uniq.filter(r => r.ph === ph.id);
+    if (!rs.length) return;
+    html += `<div class="phase"><div class="phase-head"><span class="phase-dot" style="background:${ph.color}"></span><span class="phase-title">${ph.name}</span></div>
+      ${rs.map(r=>`<div class="res-item"><span class="res-type">${r.t}</span><a href="${r.u}" target="_blank" rel="noopener">${r.n}</a></div>`).join("")}
+    </div>`;
+  });
+  v.innerHTML = html;
+}
+
+/* =====================================================
+   BUSINESS
+===================================================== */
+function renderBiz() {
+  const v = document.getElementById("view-biz");
+  v.innerHTML = `<h2>Business &amp; startup</h2>
+  <p class="sub">Le chemin de "projet personnel" à "entreprise finançable", en 6 étapes. Les modules détaillés sont en Phase 8 du Parcours.</p>
+  ${BIZ.map((b,i)=>`
+    <div class="biz-step">
+      <div class="biz-num">${i+1}</div>
+      <div class="biz-body card">
+        <h3>${b.t}</h3>
+        <p style="font-size:.88em; color:var(--muted); margin-bottom:8px;">${b.d}</p>
+        ${b.res.map(r=> r[1]==="#" ? `<span class="tag">${r[0]}</span>` : `<div class="res-item"><a href="${r[1]}" target="_blank" rel="noopener">${r[0]}</a><span class="res-free">gratuit</span></div>`).join("")}
+      </div>
+    </div>`).join("")}
+  <div class="warn">Ordre imposé par la réalité : utilisateurs → prototype → traction → argent. Les investisseurs financent des preuves, pas des intentions — aussi nobles soient-elles.</div>`;
+}
+
+/* =====================================================
+   INVESTISSEURS
+===================================================== */
+function renderInvest() {
+  const v = document.getElementById("view-invest");
+  const ST = { todo:"À contacter", contact:"Contacté", talk:"En discussion", yes:"Partenariat / financé", no:"Refusé" };
+  v.innerHTML = `<h2>Investisseurs &amp; financement</h2>
+  <p class="sub">Prospects réels pour un projet assistive tech basé en Israël, avec suivi de contact. Vérifiez toujours les programmes ouverts avant d'écrire — les sites font foi, pas cette liste.</p>
+  <div class="grid">
+  ${INVESTORS.map(inv => {
+    const s = state.inv[inv.id] || { st:"todo", note:"" };
+    return `<div class="inv-card">
+      <div class="inv-top"><b>${inv.name}</b><span class="inv-type ${inv.cls}">${inv.type}</span></div>
+      <div class="inv-desc">${inv.desc}</div>
+      <div class="inv-why">💡 ${inv.why}</div>
+      <div class="inv-foot">
+        <a href="${inv.url}" target="_blank" rel="noopener">Site</a>
+        <select onchange="setInvStatus('${inv.id}', this.value)" aria-label="Statut du contact">
+          ${Object.entries(ST).map(([k,n])=>`<option value="${k}" ${s.st===k?"selected":""}>${n}</option>`).join("")}
+        </select>
+        <span class="verify">${inv.verified ? "✔ vérifié (sources 2016–2026)" : "⚠ à re-vérifier"}</span>
+      </div>
+      <textarea class="inv-note" placeholder="Notes de contact (personne, date, réponse...)" onchange="setInvNote('${inv.id}', this.value)">${s.note || ""}</textarea>
+    </div>`;
+  }).join("")}
+  </div>`;
+}
+function setInvStatus(id, st) {
+  state.inv[id] = state.inv[id] || {}; state.inv[id].st = st; save(); checkBadges(); renderDashboard(); renderBadges();
+  if (st === "contact") toast("Premier contact enregistré. Voilà qui devient sérieux.");
+}
+function setInvNote(id, note) { state.inv[id] = state.inv[id] || { st:"todo" }; state.inv[id].note = note; save(); }
+
+/* =====================================================
+   BADGES
+===================================================== */
+function checkBadges() {
+  BADGES.forEach(b => {
+    if (!state.badges.includes(b.id) && b.test(state)) {
+      state.badges.push(b.id); save();
+      toast(`Succès débloqué : ${b.ico} ${b.t}`);
+    }
+  });
+}
+function renderBadges() {
+  const v = document.getElementById("view-badges");
+  v.innerHTML = `<h2>Succès</h2><p class="sub">${state.badges.length}/${BADGES.length} débloqués. La gamification fonctionne même quand on sait qu'elle fonctionne. Fascinant.</p>
+  <div class="grid">${BADGES.map(b=>`
+    <div class="badge ${state.badges.includes(b.id) ? "won" : ""}">
+      <div class="ico">${b.ico}</div><div class="bt">${b.t}</div><div class="bd">${b.d}</div>
+    </div>`).join("")}</div>`;
+}
+
+/* =====================================================
+   JOURNAL
+===================================================== */
+function renderLab() {
+  const v = document.getElementById("view-lab");
+  v.innerHTML = `<h2>Journal de bord</h2>
+  <p class="sub">Avancées, blocages, idées, retours d'utilisateurs. Un projet de 10 ans sans journal est un projet de 10 ans d'amnésie.</p>
+  <div class="lab-form">
+    <input id="lab-input" placeholder="Ex : OCR hébreu fonctionne à 80% — tester avec l'éclairage de la salle de classe" onkeydown="if(event.key==='Enter')addLabEntry()">
+    <button class="btn" onclick="addLabEntry()">Ajouter</button>
+  </div>
+  ${[...state.lab].reverse().map((e,ri)=>{
+    const i = state.lab.length - 1 - ri;
+    return `<div class="lab-entry"><span class="lab-date">${e.d}</span><span style="font-size:.92em;">${e.t}</span><button class="lab-del" onclick="delLabEntry(${i})" aria-label="Supprimer">✕</button></div>`;
+  }).join("") || `<div class="card" style="text-align:center; color:var(--muted); font-size:.9em;">Aucune entrée. Le silence est élégant mais peu documenté.</div>`}
+  <div class="modal-actions">
+    <button class="btn ghost small" onclick="exportData()">Exporter la progression (JSON)</button>
+    <button class="btn ghost small" onclick="document.getElementById('import-file').click()">Importer</button>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
+  </div>
+  ${store.ok ? "" : `<div class="warn">Aperçu sans sauvegarde persistante : téléchargez le fichier et ouvrez-le dans votre navigateur pour que la progression soit conservée (ou utilisez Exporter/Importer).</div>`}`;
+}
+function addLabEntry() {
+  const inp = document.getElementById("lab-input");
+  const t = inp.value.trim(); if (!t) return;
+  state.lab.push({ d: new Date().toLocaleDateString("fr-FR"), t }); save(); renderLab();
+}
+function delLabEntry(i) { state.lab.splice(i, 1); save(); renderLab(); }
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "lumen-progression.json"; a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importData(input) {
+  const f = input.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { try { state = JSON.parse(r.result); state.feedKnown=state.feedKnown||[]; state.feedSaved=state.feedSaved||[]; state.feedLikes=state.feedLikes||[]; state.feedTopic=state.feedTopic||"Mix"; state.feedOrder=Array.isArray(state.feedOrder)?state.feedOrder:[]; state.feedVersion=state.feedVersion||0; save(); applyLowVision(); renderAll(); toast("Progression importée."); } catch(e) { toast("Fichier invalide."); } };
+  r.readAsText(f);
+}
+
+/* =====================================================
+   NAVIGATION & INIT
+===================================================== */
+document.querySelectorAll(".nav-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(x => x.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("view-" + btn.dataset.view).classList.add("active");
+  });
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+function renderAll() {
+  renderHeader(); renderDashboard(); renderFeed(); renderRoadmap(); renderProto();
+  renderLibrary(); renderBiz(); renderInvest(); renderBadges(); renderLab();
+}
+updateStreak(); applyLowVision(); checkBadges(); renderAll();
+
+</script>
+</body>
+</html>
